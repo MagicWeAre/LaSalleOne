@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mainMenuHome"
+        android:icon="@drawable/ic_icon_home"
+        android:title="@string/home_menu"/>
+    <item
+        android:id="@+id/mainMenuSubjects"
+        android:icon="@drawable/ic_icon_class"
+        android:title="@string/subjects_menu" />
+    <item
+        android:id="@+id/mainMenuGrades"
+        android:icon="@drawable/ic_icon_school"
+        android:title="@string/grades_menu" />
+    <item
+        android:id="@+id/mainMenuBalance"
+        android:icon="@drawable/ic_icon_account_balance"
+        android:title="@string/balance_menu" />
+    <item
+        android:id="@+id/mainMenuProfile"
+        android:icon="@drawable/ic_icon_person"
+        android:title="@string/profile_menu" />
+</menu>

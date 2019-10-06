@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/mainDrawerHome"
+            android:icon="@drawable/ic_icon_language"
+            android:title="@string/home_drawer_menu"
+            android:checkable="true"/>
+        <item
+            android:id="@+id/mainDrawerDocuments"
+            android:icon="@drawable/ic_icon_folder"
+            android:title="@string/documents_menu"
+            android:checkable="true"/>
+        <item
+            android:id="@+id/mainDrawerFIBU"
+            android:icon="@drawable/ic_icon_sharp_sports"
+            android:title="@string/fibu_menu"
+            android:checkable="true"/>
+        <item
+            android:id="@+id/mainDrawerSettings"
+            android:icon="@drawable/ic_icon_settings"
+            android:title="@string/settings_menu"
+            android:checkable="true"/>
+        <item
+            android:id="@+id/mainDrawerEnd"
+            android:icon="@drawable/ic_icon_close"
+            android:title="@string/close_session_menu"
+            android:checkable="true"/>
+        <item
+            android:id="@+id/mainDrawerHelp"
+            android:icon="@drawable/ic_icon_help"
+            android:title="@string/help_menu"
+            android:checkable="true"/>
+    </group>
+</menu>

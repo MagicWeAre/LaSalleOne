@@ -1,0 +1,155 @@
+<resources>
+
+    <string name="app_name" translatable="false">La Salle</string>
+    <string name="main_activity_title">Nuestro Portal</string>
+    <string name="schedule_activity_title">Horario</string>
+    <string name="ad_content_description">Próximamente disponible el Asistente de Tarjetas.</string>
+
+    <!--Actividades-->
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Contraseña</string>
+    <string name="action_sign_in">Ingresar</string>
+    <string name="error_field_required">Campo Requerido</string>
+    <string name="prompt_id" translatable="false">ID</string>
+    <string name="example_id" translatable="false">e.g. 014406233</string>
+    <string name="placeholder_id" translatable="false">014406233</string>
+    <string name="example_password" translatable="false">e.g. OD69KNkE</string>
+    <string name="remember_password">Recordar Contraseña</string>
+    <string name="login_activity">Iniciar Sesión</string>
+
+    <!-- Help -->
+    <string name="help_end_msg">Para ayuda personalizada, contáctenos en soporte@wearemagic.dev</string>
+
+    <!-- Main -->
+
+    <!-- ActionBar -->
+    <string name="spinner_period_title">Periodo Mostrado</string>
+
+    <!-- Drawer -->
+    <string name="close_session_menu">Cerrar Sesión</string>
+    <string name="open_drawer">Menú Abierto</string>
+    <string name="close_drawer">Menú Cerrado</string>
+    <string name="header_drawer">Nuestra Salle</string>
+    <string name="profile_menu">Perfil</string>
+    <string name="settings_menu">Configuración</string>
+    <string name="help_menu">Ayuda</string>
+    <string name="documents_menu">Alumnos</string>
+    <string name="fibu_menu" translatable="false">FIBU</string>
+    <string name="home_drawer_menu">Portal</string>
+
+    <!-- BottomNav -->
+    <string name="home_menu">Inicio</string>
+    <string name="grades_menu">Boletas</string>
+    <string name="subjects_menu">Materias</string>
+    <string name="balance_menu">Finanzas</string>
+
+    <!-- ViewPager -->
+    <string name="summary_tab">Resumen</string>
+    <string name="charges_tab">Cargos</string>
+    <string name="credits_tab">Depósitos</string>
+    <string name="expanded_tab">Desglosado</string>
+
+    <!-- Home -->
+    <string name="welcome_message_m">Bienvenido</string>
+    <string name="welcome_message_w">Bienvenida</string>
+    <string name="subjects_number">No. de Materias:</string>
+    <string name="subjects_avg">Promedio:</string>
+    <string name="subjects_highest">Calif. Más Alta:</string>
+    <string name="subjects_lowest">Calif. Más Baja:</string>
+    <string name="subjects_number_placeholder" translatable="false">14</string>
+    <string name="subjects_avg_placeholder" translatable="false">7.9</string>
+    <string name="subjects_highest_placeholder" translatable="false">9.9</string>
+    <string name="subjects_lowest_placeholder" translatable="false">5.0</string>
+    <string name="schedule_this_class">Ahora:</string>
+    <string name="schedule_next_class">Próxima Clase:</string>
+    <string name="schedule_class_plus">y %1$d más</string>
+
+    <!-- Grades -->
+    <string name="name_example_grades">Viaje En El Tiempo I</string>
+    <string name="instructor_example_grades" translatable="false">Albert Einstein</string>
+    <string name="partial_example_grades" translatable="false">10.0</string>
+    <string name="section_example_grades" translatable="false">305</string>
+    <string name="code_example_grades" translatable="false">030</string>
+
+    <string name="name_example_parcial">Primer Parcial</string>
+    <string name="points_example_parcial" translatable="false">10.0</string>
+    <string name="max_points_example_parcial" translatable="false">/10.0</string>
+    <string name="percentage_example_parcial" translatable="false">(16.17 %)</string>
+    <string name="date_example_parcial" translatable="false">2000-06-17</string>
+
+    <!-- Subjects -->
+    <string name="building_icon_schedule">Edificio</string>
+    <string name="room_icon_schedule">Cuarto</string>
+
+    <string name="credits_example_grades">Créditos: 8.00</string>
+    <string name="credits_placeholder_grades">Créditos: </string>
+    <string name="day_example_schedule">Lunes</string>
+    <string name="date_range_example_parcial" translatable="false">2000-06-17 / 2001-08-22</string>
+    <string name="hour_range_example_parcial" translatable="false">21:15 / 23:00</string>
+    <string name="building_example_parcial" translatable="false">C</string>
+    <string name="room_example_parcial" translatable="false">5</string>
+
+    <string name="toolbar_button_calendar">Calendario</string>
+
+    <!-- Balance -->
+    <string name="balance_view_summary">Resumen</string>
+    <string name="balance_view_type">Por Tipo</string>
+    <string name="balance_view_charges">Depósitos / Cargos</string>
+    <string name="desc_example_balance">Colegiatura Junio</string>
+    <string name="date_example_balance" translatable="false">2000-06-17</string>
+    <string name="amount_example_balance" translatable="false">$104.51</string>
+    <string name="title_charges">Cargos</string>
+    <string name="title_credits">Depósitos</string>
+    <string name="period_total">Total del Periodo:</string>
+    <string name="other_periods_total">Otros Periodos:</string>
+    <string name="courses_total">SALDO</string>
+
+    <!-- Configuración -->
+    <string name="theme_settings">Tema Oscuro:</string>
+    <string name="yes_dark_spinner">Siempre</string>
+    <string name="no_dark_spinner">Por Defecto</string>
+    <string name="auto_dark_spinner">Día/Noche</string>
+
+    <string name="toast_dark_mode">Reinicie la aplicación</string>
+
+    <!-- Perfil-->
+    <string name="email_icon_profile">Email</string>
+    <string name="phone_icon_profile">Teléfono</string>
+    <string name="location_icon_profile">Dirección</string>
+
+    <string name="email_profile">Email</string>
+    <string name="mobile_profile">Celular</string>
+    <string name="phone_profile">Casa</string>
+    <string name="email_example_profile" translatable="false">suazo@example.com</string>
+    <string name="mobile_example_profile" translatable="false">9511929317</string>
+    <string name="phone_example_profile" translatable="false">5187838</string>
+    <string name="name_profile">Nombre</string>
+    <string name="surname_profile">Apellidos</string>
+    <string name="id_profile" translatable="false">ID</string>
+    <string name="curp_profile" translatable="false">CURP</string>
+    <string name="image_profile_desc">Foto de Perfil</string>
+    <string name="none_default_profile">No registrado</string>
+
+    <string name="one_example_address" translatable="false">42 Wallaby Way</string>
+    <string name="two_example_address" translatable="false">Vladimir</string>
+    <string name="three_example_address" translatable="false">Ilich</string>
+    <string name="four_example_address" translatable="false">Ulíanov</string>
+    <string name="country_example_address" translatable="false">Xoxocotlán 71230 Oaxaca, México.</string>
+
+    <string name="label_clipboard" translatable="false">Phone Number</string>
+    <string name="label_email">Enviar un email vía</string>
+    <string name="toast_phone_clipboard_profile">Número copiado. Deje presionado para llamar.</string>
+    <string name="toast_email_clipboard_profile">Dirección copiada. Deje presionado para enviar email.</string>
+
+    <!--Errores y Advertencias-->
+    <string name="error_incorrect_login">El ID o contraseña son incorrectos.</string>
+    <string name="error_internet_failure">No hay conexión a Internet.</string>
+    <string name="error_no_data">No se encontraron datos.</string>
+    <string name="error_parsing_data">Hubo un error al recuperar los datos.</string>
+    <string name="retry_internet_connection">RECARGAR</string>
+    <string name="schedule_current_subject_plus">y 2 más</string>
+
+</resources>

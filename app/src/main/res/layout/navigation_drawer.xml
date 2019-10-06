@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/navigationToolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimary"
+    app:titleTextColor="@color/colorWhite"
+    app:title="@string/main_activity_title"
+    app:contentInsetLeft="0dp"
+    app:contentInsetStart="0dp"
+    app:contentInsetStartWithNavigation="0dp"
+    app:titleMarginStart="24dp"
+    app:elevation="16dp">
+
+    <Spinner
+        android:id="@+id/subjectsBarSpinner"
+        style="@style/SpinnerInAppBar"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical|end" />
+
+    <Spinner
+        android:id="@+id/gradesBarSpinner"
+        style="@style/SpinnerInAppBar"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical|end"
+        android:visibility="gone" />
+
+    <Spinner
+        android:id="@+id/balanceBarSpinner"
+        style="@style/SpinnerInAppBar"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical|end"
+        android:visibility="gone" />
+
+</android.support.v7.widget.Toolbar>
