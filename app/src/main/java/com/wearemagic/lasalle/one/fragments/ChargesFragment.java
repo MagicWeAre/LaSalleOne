@@ -1,6 +1,7 @@
 package com.wearemagic.lasalle.one.fragments;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -127,6 +128,23 @@ public class ChargesFragment extends Fragment implements SwipeRefreshLayout.OnRe
         }
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof SubjectsFragment.SubjectsListener) {
+            listener = (ChargesFragment.ChargesListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement ChargesListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 
     @Override

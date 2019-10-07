@@ -1,5 +1,6 @@
 package com.wearemagic.lasalle.one.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -129,6 +130,23 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
             swipeRefreshLayout.setRefreshing(false);}
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof SubjectsFragment.SubjectsListener) {
+            listener = (BalanceFragment.BalanceListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement BalanceListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 
     @Override

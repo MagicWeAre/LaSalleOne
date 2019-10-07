@@ -257,111 +257,10 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
                     ArrayList homeList = new ArrayList();
                     homeList.add(String.valueOf(returnList.size()));
 
-                    ArrayList<ScheduleSubject> currentSubjects = new ArrayList<>();
-                    ArrayList<ScheduleSubject> todaySubjects = new ArrayList<>();
+                    ArrayList<ArrayList<ScheduleSubject>> homeDates = getSubjectsByDate(returnList);
 
-                    ArrayList<ScheduleSubject> pastSubjectsDay = new ArrayList<>();
-                    ArrayList<ScheduleSubject> futureSubjectsDay = new ArrayList<>();
-                    ArrayList<ScheduleSubject> nowSubjectsDay = new ArrayList<>();
-
-                    // Calendar PreProcessing
-                    Date today = new Date();
-                    Calendar todayCal = Calendar.getInstance();
-                    todayCal.setTime(today);
-                    final int todayDayWeek = todayCal.get(Calendar.DAY_OF_WEEK);
-
-                    // Check for each subject if today falls inside their valid period
-                    for (ScheduleSubject scheduleSubject : returnList) {
-                        Date startDate = null;
-                        Date endDate = null;
-
-                        try {
-                            startDate = scheduleSubject.getStartDate();
-                            endDate = scheduleSubject.getEndDate();
-                        } catch (ParseException e) {
-                            Log.e(TAG, e.getLocalizedMessage());
-                        }
-
-                        if (startDate != null && endDate != null) {
-                            if(today.after(startDate) && today.before(endDate)){
-                                currentSubjects.add(scheduleSubject);
-                            }
-                        }
-                    }
-
-                    // Check for each subject if there are any classes today
-                    for (ScheduleSubject currentSubject: currentSubjects) {
-                        System.out.println();
-                        ArrayList<Integer> weekIntList = currentSubject.getWeekDaysList();
-
-                        if(weekIntList.contains(todayDayWeek)){
-                            ArrayList<SchedulePiece> classesOfDay = currentSubject.getClassesOfDay(todayDayWeek);
-
-                            for (SchedulePiece classOfDay : classesOfDay) {
-
-                                // Convert to objects and compare
-
-                                SimpleDateFormat isoTime = new SimpleDateFormat("hh:mm", Locale.US);
-                                String startTimeString =  classOfDay.getStartHour();
-                                String endTimeString =  classOfDay.getEndHour();
-
-                                Date startTime = new Date();
-                                Date endTime = new Date();
-
-                                try {
-                                    startTime = isoTime.parse(startTimeString);
-                                    endTime = isoTime.parse(endTimeString);
-                                } catch (ParseException e){
-                                    Log.e(TAG, e.getMessage());
-                                }
-
-                                Date startDate = combineDates(today, startTime);
-                                Date endDate = combineDates(today, endTime);
-
-                                if(today.before(startDate)) {
-                                    futureSubjectsDay.add(currentSubject);
-                                } else if (today.after(startDate)){
-                                    if(today.before(endDate)){
-                                        nowSubjectsDay.add(currentSubject);
-                                    } else {
-                                        pastSubjectsDay.add(currentSubject);
-                                    }
-                                }
-                            }
-                            todaySubjects.add(currentSubject);
-                        }
-                        // So far we have a list of subjects with classes today
-                    }
-
-                    if(futureSubjectsDay.size() > 1){
-                        for (ScheduleSubject subject : futureSubjectsDay){
-                            ArrayList<SchedulePiece> schedulePiecesList = subject.getClassesAfterTime(today);
-                            if (!schedulePiecesList.isEmpty()){
-                                schedulePiecesList.get(0);
-                            }
-                        }
-
-                        Collections.sort(futureSubjectsDay, new Comparator<ScheduleSubject>() {
-                            @Override public int compare(ScheduleSubject ss1, ScheduleSubject ss2) {
-                                Date now = new Date();
-
-                                ArrayList<SchedulePiece> ss1List = ss1.getClassesAfterTime(now);
-                                ArrayList<SchedulePiece> ss2List = ss2.getClassesAfterTime(now);
-
-                                SchedulePiece ss1Time, ss2Time;
-
-                                ss1Time = ss1List.get(0);
-                                ss2Time = ss2List.get(0);
-
-                                return ss1Time.getStartDate().compareTo(ss2Time.getStartDate()); // Ascending
-                            }
-                        });
-                    }
-
-                    homeList.add(nowSubjectsDay);
-                    homeList.add(futureSubjectsDay);
-                    // By now we have three lists of subjects of the day, depending on whether they
-                    // have, haven't, or are happening right now
+                    homeList.add(homeDates.get(0));
+                    homeList.add(homeDates.get(1));
 
                     listener.onSubjectInfoSent(homeList);
 
@@ -403,6 +302,123 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
         ssList.clear();
         ssList.addAll(scheduleSubjectList);
         ssAdapter.notifyDataSetChanged();
+    }
+
+    private ArrayList<ArrayList<ScheduleSubject>> getSubjectsByDate(ArrayList<ScheduleSubject> initialList) {
+
+        ArrayList<ArrayList<ScheduleSubject>> returnList = new ArrayList<>();
+
+        ArrayList<ScheduleSubject> currentSubjects = new ArrayList<>();
+        ArrayList<ScheduleSubject> todaySubjects = new ArrayList<>();
+
+        ArrayList<ScheduleSubject> pastSubjectsDay = new ArrayList<>();
+        ArrayList<ScheduleSubject> futureSubjectsDay = new ArrayList<>();
+        ArrayList<ScheduleSubject> nowSubjectsDay = new ArrayList<>();
+
+        // Calendar PreProcessing
+        Date today = new Date();
+        Calendar todayCal = Calendar.getInstance();
+        todayCal.setTime(today);
+        final int todayDayWeek = todayCal.get(Calendar.DAY_OF_WEEK);
+
+        // Check for each subject if today falls inside their valid period
+        for (ScheduleSubject scheduleSubject : initialList) {
+            Date startDate = null;
+            Date endDate = null;
+
+            try {
+                startDate = scheduleSubject.getStartDate();
+                endDate = scheduleSubject.getEndDate();
+            } catch (ParseException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+
+            if (startDate != null && endDate != null) {
+                if(today.after(startDate) && today.before(endDate)){
+                    currentSubjects.add(scheduleSubject);
+                }
+            }
+        }
+
+        // Check for each subject if there are any classes today, divide into three categories
+        for (ScheduleSubject currentSubject: currentSubjects) {
+            System.out.println();
+            ArrayList<Integer> weekIntList = currentSubject.getWeekDaysList();
+
+            if(weekIntList.contains(todayDayWeek)){
+                ArrayList<SchedulePiece> classesOfDay = currentSubject.getClassesOfDay(todayDayWeek);
+
+                for (SchedulePiece classOfDay : classesOfDay) {
+
+                    // Convert to objects and compare
+
+                    SimpleDateFormat isoTime = new SimpleDateFormat("hh:mm", Locale.US);
+                    String startTimeString =  classOfDay.getStartHour();
+                    String endTimeString =  classOfDay.getEndHour();
+
+                    Date startTime = new Date();
+                    Date endTime = new Date();
+
+                    try {
+                        startTime = isoTime.parse(startTimeString);
+                        endTime = isoTime.parse(endTimeString);
+                    } catch (ParseException e){
+                        Log.e(TAG, e.getMessage());
+                    }
+
+                    Date startDate = combineDates(today, startTime);
+                    Date endDate = combineDates(today, endTime);
+
+                    if(today.before(startDate)) {
+                        futureSubjectsDay.add(currentSubject);
+                    } else if (today.after(startDate)){
+                        if(today.before(endDate)){
+                            nowSubjectsDay.add(currentSubject);
+                        } else {
+                            pastSubjectsDay.add(currentSubject);
+                        }
+                    }
+                }
+                todaySubjects.add(currentSubject);
+            }
+            // So far we have a list of subjects with classes today
+        }
+
+        // Sort Future Subjects
+        if(futureSubjectsDay.size() > 1){
+            for (ScheduleSubject subject : futureSubjectsDay){
+                ArrayList<SchedulePiece> schedulePiecesList = subject.getClassesAfterTime(today);
+                if (!schedulePiecesList.isEmpty()){
+                    schedulePiecesList.get(0);
+                }
+            }
+
+            Collections.sort(futureSubjectsDay, new Comparator<ScheduleSubject>() {
+                @Override public int compare(ScheduleSubject ss1, ScheduleSubject ss2) {
+                    Date now = new Date();
+
+                    ArrayList<SchedulePiece> ss1List = ss1.getClassesAfterTime(now);
+                    ArrayList<SchedulePiece> ss2List = ss2.getClassesAfterTime(now);
+
+                    SchedulePiece ss1Time, ss2Time;
+
+                    ss1Time = ss1List.get(0);
+                    ss2Time = ss2List.get(0);
+
+                    return ss1Time.getStartDate().compareTo(ss2Time.getStartDate()); // Ascending
+                }
+            });
+        }
+
+
+        returnList.add(nowSubjectsDay);
+        returnList.add(futureSubjectsDay);
+
+
+        // By now we have three lists of subjects of the day, depending on whether they
+        // have, haven't, or are happening right now
+
+        return returnList;
     }
 
     private static Date combineDates(Date date, Date time) {
