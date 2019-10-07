@@ -1,5 +1,6 @@
 package com.wearemagic.lasalle.one;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import com.wearemagic.lasalle.one.adapters.ExpandableScheduleAdapter;
+import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.SchedulePiece;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +36,7 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
     private ScheduleAsyncTaskRunner scheduleTask = new ScheduleAsyncTaskRunner();
     private HashMap<String, ArrayList<SchedulePiece>> schedulePieceMap;
     private ArrayList<String> scheduleDayList = new ArrayList<>();
-    private ArrayList<String> subjectData= new ArrayList<>();
+    private ArrayList<String> subjectData = new ArrayList<>();
 
     private ExpandableListView expandableListView;
     private ExpandableScheduleAdapter spAdapter;
@@ -46,6 +48,8 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
     private String numericCode;
     private String periodCode;
     private boolean viewCreated;
+
+    private boolean redoingLogin;
 
     private Toolbar scheduleToolbar;
 
@@ -69,6 +73,8 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
             schedulePieceMap = (HashMap<String, ArrayList<SchedulePiece>>) savedInstanceState.getSerializable("schedulePieceMap");
             scheduleDayList = savedInstanceState.getStringArrayList("scheduleDayList");
             subjectData = savedInstanceState.getStringArrayList("subjectData");
+
+            redoingLogin = savedInstanceState.getBoolean("redoingLogin");
 
         } else {
             if(loginBundle != null){
@@ -100,6 +106,8 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
         outState.putStringArrayList("scheduleDayList", scheduleDayList);
         outState.putStringArrayList("subjectData", subjectData);
 
+        outState.putBoolean("redoingLogin", redoingLogin);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -117,7 +125,7 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
 
     @Override
     protected void onResume() {
-        if (scheduleDayList.isEmpty() || schedulePieceMap.isEmpty() || subjectData.isEmpty()){
+        if (scheduleDayList.isEmpty() && subjectData.isEmpty()){
             onRefresh();
         } else {
             swipeRefreshLayout.setRefreshing(true);
@@ -147,6 +155,14 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
         // Inflate the menu; this adds items to the action bar if it is present.
         //getMenuInflater().inflate(R.menu.schedule_toolbar_items, menu);
         return true;
+    }
+
+    public void onRedoLogin(){
+        if(!redoingLogin){
+            redoingLogin = true;
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        }
     }
 
     public String capitalizeSubjectTitle(String subjectTitle){
@@ -275,6 +291,9 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
 
                 } catch (IOException e) {
                     Log.e(TAG, "IOException on ScheduleAsyncTask");
+                } catch (LoginTimeoutException lt) {
+                    Log.d(TAG, "LoginTimeoutException on ParcialAsyncTask");
+                    onRedoLogin();
                 }
 
                 doBackgroundFinished = true;
@@ -286,25 +305,27 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
         protected void onPostExecute(ArrayList returnList) {
             if (returnList != null && !returnList.isEmpty()){
 
-                ArrayList<String> subjectData = new ArrayList<>();
+                ArrayList<String> localSubjectData = new ArrayList<>();
 
                 String[] subjectTitle = ((String) returnList.get(0)).split(" - ", 2);
 
-                subjectData.add(capitalizeSubjectTitle(WordUtils.capitalizeFully(subjectTitle[1])).trim());
+                localSubjectData.add(capitalizeSubjectTitle(WordUtils.capitalizeFully(subjectTitle[1])).trim());
 
                 String localCredits = (String) returnList.get(1);
-                subjectData.add(localCredits.trim().replace("Credits", "").trim());
+                localSubjectData.add(localCredits.trim().replace("Credits", "").trim());
 
-                subjectData.add(orderName((String) returnList.get(2)).trim());
+                localSubjectData.add(orderName((String) returnList.get(2)).trim());
 
                 String[] dateRangeList = ((String) returnList.get(3)).split("-");
 
-                subjectData.add(dateToISO(dateRangeList[0]).concat(" / ").concat(dateToISO(dateRangeList[1])).trim());
+                localSubjectData.add(dateToISO(dateRangeList[0]).concat(" / ").concat(dateToISO(dateRangeList[1])).trim());
 
                 String[] subjectCodes = subjectTitle[0].split("/", 3);
 
-                subjectData.add(subjectCodes[2].trim());
-                subjectData.add(subjectCodes[0].trim());
+                localSubjectData.add(subjectCodes[2].trim());
+                localSubjectData.add(subjectCodes[0].trim());
+
+                subjectData.addAll(localSubjectData);
 
                 schedulePieceMap = (HashMap<String, ArrayList<SchedulePiece>>) returnList.get(4);
                 scheduleDayList.clear();
@@ -350,7 +371,7 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
         }
     }
 
-    private Document getScheduleDocument(String serviceCookie, String periodCode, String numericCode) throws IOException {
+    private Document getScheduleDocument(String serviceCookie, String periodCode, String numericCode) throws IOException, LoginTimeoutException {
         Map<String, String> cookies = new HashMap<>();
         cookies.put("SelfService", serviceCookie);
 
@@ -360,6 +381,10 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
                 .execute();
 
         Document scheduleDocument = schedulePageGet.parse();
+
+        if(scheduleDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
+            throw new LoginTimeoutException();
+        }
 
         Element viewState = scheduleDocument.select("input[name=__VIEWSTATE]").first();
         Element eventValidation = scheduleDocument.select("input[name=__EVENTVALIDATION]").first();

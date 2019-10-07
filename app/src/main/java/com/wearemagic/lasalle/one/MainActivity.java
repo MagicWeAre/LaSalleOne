@@ -154,11 +154,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 gradesSpinnerPosition = savedInstanceState.getInt("gradesSpinnerPosition");
                 balanceSpinnerPosition = savedInstanceState.getInt("balanceSpinnerPosition");
 
-
                 //Fragment Tags
                 balanceTag = savedInstanceState.getString("balanceTag");
                 creditsTag = savedInstanceState.getString("creditsTag");
                 chargesTag = savedInstanceState.getString("chargesTag");
+
+                // Redoing Login Boolean
+                redoingLogin = savedInstanceState.getBoolean("redoingLogin");
 
             } else {
                 periodsTask = new PeriodsAsyncTaskRunner();
@@ -504,6 +506,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         outState.putString("balanceTag", vpAdapter.getFragmentTag(0));
         outState.putString("creditsTag", vpAdapter.getFragmentTag(1));
         outState.putString("chargesTag", vpAdapter.getFragmentTag(2));
+
+        outState.putBoolean("redoingLogin", redoingLogin);
         super.onSaveInstanceState(outState);
     }
 

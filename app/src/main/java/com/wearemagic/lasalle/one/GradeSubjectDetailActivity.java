@@ -1,5 +1,6 @@
 package com.wearemagic.lasalle.one;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 
 import com.wearemagic.lasalle.one.adapters.ParcialGradeAdapter;
 import com.wearemagic.lasalle.one.adapters.SummaryTypeAdapter;
+import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.ParcialGrade;
 import com.wearemagic.lasalle.one.objects.SummaryType;
 
@@ -45,6 +47,8 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
     private String periodCode;
     private boolean viewCreated;
 
+    private boolean redoingLogin;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +66,8 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
             parcialGradeList = savedInstanceState.getParcelableArrayList("parcialGradeList");
             subjectName = savedInstanceState.getString("subjectName");
             instructorName = savedInstanceState.getString("instructorName");
+
+            redoingLogin = savedInstanceState.getBoolean("redoingLogin");
 
         } else {
 
@@ -138,6 +144,8 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
         outState.putString("subjectName", subjectName);
         outState.putString("instructorName", instructorName);
 
+        outState.putBoolean("redoingLogin", redoingLogin);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -193,6 +201,9 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
 
                 } catch (IOException e) {
                     Log.e(TAG, "IOException on ParcialAsyncTask");
+                } catch (LoginTimeoutException lt) {
+                    Log.d(TAG, "LoginTimeoutException on ParcialAsyncTask");
+                    onRedoLogin();
                 }
 
                 doBackgroundFinished = true;
@@ -232,6 +243,14 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
         }
     }
 
+    public void onRedoLogin(){
+        if(!redoingLogin){
+            redoingLogin = true;
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        }
+    }
+
     private Document getParcialGradesDocument(String serviceCookie, String periodCode, String numericCode) throws IOException {
         Map<String, String> cookies = new HashMap<>();
         cookies.put("SelfService", serviceCookie);
@@ -245,8 +264,12 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
         return parcialGradesDocument;
     }
 
-    private ArrayList<String> getAdditionalInfo(Document parcialGradeDocument) {
+    private ArrayList<String> getAdditionalInfo(Document parcialGradeDocument) throws LoginTimeoutException {
         ArrayList<String> returnList = new ArrayList<>();
+
+        if(parcialGradeDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
+            throw new LoginTimeoutException();
+        }
 
         Boolean dataAvailable = parcialGradeDocument.getElementsByClass("msgNoData").isEmpty();
 
