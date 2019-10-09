@@ -23,7 +23,9 @@ public class SettingsActivity extends AppCompatActivity {
         SharedPreferences sharedP = getSharedPreferences(packageName, MODE_PRIVATE);
 
         setContentView(R.layout.activity_settings);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
         Slidr.attach(this);

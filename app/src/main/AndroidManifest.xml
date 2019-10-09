@@ -20,7 +20,7 @@
             android:value="ca-app-pub-6235757917836307~1392519632" />
 
         <activity
-            android:name=".SplashActivity"
+            android:name="SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,28 +29,28 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".LoginActivity"
+            android:name="LoginActivity"
             android:label="@string/login_activity" />
         <activity
-            android:name=".MainActivity"
+            android:name="MainActivity"
             android:theme="@style/MainTheme" />
         <activity
-            android:name=".SettingsActivity"
+            android:name="SettingsActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.SliderTheme" />
         <activity
-            android:name=".HelpActivity"
+            android:name="HelpActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.SliderTheme" />
         <activity
-            android:name=".DocumentsActivity"
+            android:name="DocumentsActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.SliderTheme" />
         <activity
-            android:name=".GradeSubjectDetailActivity"
+            android:name="GradeSubjectDetailActivity"
             android:parentActivityName=".MainActivity" />
         <activity
-            android:name=".ScheduleSubjectDetailActivity"
+            android:name="ScheduleSubjectDetailActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/NoToolbarTheme"/>
 
