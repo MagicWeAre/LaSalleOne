@@ -117,6 +117,7 @@ public class SchedulePiece implements Parcelable, Serializable {
 
     }
 
+
     @Override
     public int describeContents() {
         return 0;
@@ -125,23 +126,31 @@ public class SchedulePiece implements Parcelable, Serializable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.weekDay);
+        dest.writeValue(this.dayInt);
         dest.writeString(this.campus);
         dest.writeString(this.building);
         dest.writeString(this.room);
         dest.writeString(this.startHour);
         dest.writeString(this.endHour);
+        dest.writeLong(this.startDate != null ? this.startDate.getTime() : -1);
+        dest.writeLong(this.endDate != null ? this.endDate.getTime() : -1);
     }
 
     protected SchedulePiece(Parcel in) {
         this.weekDay = in.readString();
+        this.dayInt = (Integer) in.readValue(Integer.class.getClassLoader());
         this.campus = in.readString();
         this.building = in.readString();
         this.room = in.readString();
         this.startHour = in.readString();
         this.endHour = in.readString();
+        long tmpStartDate = in.readLong();
+        this.startDate = tmpStartDate == -1 ? null : new Date(tmpStartDate);
+        long tmpEndDate = in.readLong();
+        this.endDate = tmpEndDate == -1 ? null : new Date(tmpEndDate);
     }
 
-    public static final Parcelable.Creator<SchedulePiece> CREATOR = new Parcelable.Creator<SchedulePiece>() {
+    public static final Creator<SchedulePiece> CREATOR = new Creator<SchedulePiece>() {
         @Override
         public SchedulePiece createFromParcel(Parcel source) {
             return new SchedulePiece(source);
@@ -152,6 +161,4 @@ public class SchedulePiece implements Parcelable, Serializable {
             return new SchedulePiece[size];
         }
     };
-
-
 }

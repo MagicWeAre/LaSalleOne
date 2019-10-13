@@ -246,6 +246,7 @@ public class ScheduleSubject implements Parcelable {
         return cal.getTime();
     }
 
+
     @Override
     public int describeContents() {
         return 0;
@@ -261,9 +262,11 @@ public class ScheduleSubject implements Parcelable {
         dest.writeString(this.type);
         dest.writeString(this.sectionCode);
         dest.writeString(this.courseCode);
+        dest.writeString(this.numericCode);
+        dest.writeString(this.periodCode);
         dest.writeByte(this.teorico ? (byte) 1 : (byte) 0);
         dest.writeByte(this.practico ? (byte) 1 : (byte) 0);
-        dest.writeList(this.scheduleList);
+        dest.writeTypedList(this.scheduleList);
     }
 
     protected ScheduleSubject(Parcel in) {
@@ -275,13 +278,14 @@ public class ScheduleSubject implements Parcelable {
         this.type = in.readString();
         this.sectionCode = in.readString();
         this.courseCode = in.readString();
+        this.numericCode = in.readString();
+        this.periodCode = in.readString();
         this.teorico = in.readByte() != 0;
         this.practico = in.readByte() != 0;
-        this.scheduleList = new ArrayList<SchedulePiece>();
-        in.readList(this.scheduleList, SchedulePiece.class.getClassLoader());
+        this.scheduleList = in.createTypedArrayList(SchedulePiece.CREATOR);
     }
 
-    public static final Parcelable.Creator<ScheduleSubject> CREATOR = new Parcelable.Creator<ScheduleSubject>() {
+    public static final Creator<ScheduleSubject> CREATOR = new Creator<ScheduleSubject>() {
         @Override
         public ScheduleSubject createFromParcel(Parcel source) {
             return new ScheduleSubject(source);

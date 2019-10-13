@@ -153,47 +153,6 @@ public class GradeSubject implements Parcelable {
         return interna;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.numericCode);
-        dest.writeString(this.subjectName);
-        dest.writeString(this.courseInfo);
-        dest.writeString(this.sectionCode);
-        dest.writeDouble(this.credits);
-        dest.writeByte(this.teorico ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.practico ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.excento ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.interna ? (byte) 1 : (byte) 0);
-    }
-
-    protected GradeSubject(Parcel in) {
-        this.numericCode = in.readString();
-        this.subjectName = in.readString();
-        this.courseInfo = in.readString();
-        this.sectionCode = in.readString();
-        this.credits = in.readDouble();
-        this.teorico = in.readByte() != 0;
-        this.practico = in.readByte() != 0;
-        this.excento = in.readByte() != 0;
-        this.interna = in.readByte() != 0;
-    }
-
-    public static final Parcelable.Creator<GradeSubject> CREATOR = new Parcelable.Creator<GradeSubject>() {
-        @Override
-        public GradeSubject createFromParcel(Parcel source) {
-            return new GradeSubject(source);
-        }
-
-        @Override
-        public GradeSubject[] newArray(int size) {
-            return new GradeSubject[size];
-        }
-    };
 
     public String capitalizeSubjectTitle(String subjectTitle){
         String returnString;
@@ -209,6 +168,56 @@ public class GradeSubject implements Parcelable {
 
         return returnString;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.subjectName);
+        dest.writeString(this.courseInfo);
+        dest.writeString(this.sectionCode);
+        dest.writeString(this.numericCode);
+        dest.writeString(this.periodCode);
+        dest.writeString(this.projectedGrade);
+        dest.writeString(this.finalGrade);
+        dest.writeString(this.qualityPoints);
+        dest.writeDouble(this.credits);
+        dest.writeByte(this.teorico ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.practico ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.excento ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.interna ? (byte) 1 : (byte) 0);
+    }
+
+    protected GradeSubject(Parcel in) {
+        this.subjectName = in.readString();
+        this.courseInfo = in.readString();
+        this.sectionCode = in.readString();
+        this.numericCode = in.readString();
+        this.periodCode = in.readString();
+        this.projectedGrade = in.readString();
+        this.finalGrade = in.readString();
+        this.qualityPoints = in.readString();
+        this.credits = in.readDouble();
+        this.teorico = in.readByte() != 0;
+        this.practico = in.readByte() != 0;
+        this.excento = in.readByte() != 0;
+        this.interna = in.readByte() != 0;
+    }
+
+    public static final Creator<GradeSubject> CREATOR = new Creator<GradeSubject>() {
+        @Override
+        public GradeSubject createFromParcel(Parcel source) {
+            return new GradeSubject(source);
+        }
+
+        @Override
+        public GradeSubject[] newArray(int size) {
+            return new GradeSubject[size];
+        }
+    };
 }
 
 

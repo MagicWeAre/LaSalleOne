@@ -97,6 +97,7 @@ public class ParcialGrade implements Parcelable {
         dest.writeString(this.pointsEarned);
         dest.writeString(this.maxPoints);
         dest.writeString(this.maxPercentage);
+        dest.writeString(this.percentage);
     }
 
     protected ParcialGrade(Parcel in) {
@@ -106,6 +107,7 @@ public class ParcialGrade implements Parcelable {
         this.pointsEarned = in.readString();
         this.maxPoints = in.readString();
         this.maxPercentage = in.readString();
+        this.percentage = in.readString();
     }
 
     public static final Parcelable.Creator<ParcialGrade> CREATOR = new Parcelable.Creator<ParcialGrade>() {
