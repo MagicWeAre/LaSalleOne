@@ -2,21 +2,20 @@ package com.wearemagic.lasalle.one;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.wearemagic.lasalle.one.adapters.ParcialGradeAdapter;
-import com.wearemagic.lasalle.one.adapters.SummaryTypeAdapter;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.ParcialGrade;
-import com.wearemagic.lasalle.one.objects.SummaryType;
 
 import org.apache.commons.text.WordUtils;
 import org.jsoup.Jsoup;
@@ -199,6 +198,10 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
                         returnList.add(parcialGrades);
                     }
 
+                    if (returnList.isEmpty()) {
+                        returnList = null;
+                    }
+
                 } catch (IOException e) {
                     Log.e(TAG, "IOException on ParcialAsyncTask");
                 } catch (LoginTimeoutException lt) {
@@ -213,33 +216,49 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
 
         @Override
         protected void onPostExecute(ArrayList returnList) {
-            if (returnList != null && !returnList.isEmpty()){
+            if (returnList != null){
+                if (!returnList.isEmpty()) {
 
-                subjectName = (String) returnList.get(0);
-                String instructor = (String) returnList.get(1);
+                    subjectName = (String) returnList.get(0);
+                    String instructor = (String) returnList.get(1);
 
-                instructor = instructor.replace(",", "");
-                String[] instructorArray = instructor.split("\\s+");
-                String secondName = "";
+                    instructor = instructor.replace(",", "");
+                    String[] instructorArray = instructor.split("\\s+");
+                    String secondName = "";
 
-                if (instructorArray.length > 1){
-                    if (instructorArray.length > 3){
-                        secondName = instructorArray[3] + " "; }
+                    if (instructorArray.length > 1){
+                        if (instructorArray.length > 3){
+                            secondName = instructorArray[3] + " "; }
 
-                    instructorName = WordUtils.capitalizeFully(instructorArray[2] + " " +
-                            secondName + instructorArray[0] + " " + instructorArray[1]);
+                        instructorName = WordUtils.capitalizeFully(instructorArray[2] + " " +
+                                secondName + instructorArray[0] + " " + instructorArray[1]);
+                    } else {
+                        instructorName = instructorArray[0];
+                    }
+
+                    parcialGradeList = (ArrayList<ParcialGrade>) returnList.get(2);
+                    fillParcials(parcialGradeList);
+                    fillGradeData(subjectName, instructorName);
                 } else {
-                    instructorName = instructorArray[0];
+                    if (viewCreated) {
+                        Snackbar noInternetSB = Snackbar
+                                .make(findViewById(R.id.gradeSubjectDetailLayout), getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        onRefresh();
+                                    }
+                                });
+
+                        noInternetSB.show();
+                    }
                 }
 
-                parcialGradeList = (ArrayList<ParcialGrade>) returnList.get(2);
-                fillParcials(parcialGradeList);
-                fillGradeData(subjectName, instructorName);
             } else {
                 fillGradeData(getString(R.string.error_no_data), "");
             }
-            swipeRefreshLayout.setRefreshing(false);
 
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 

@@ -17,7 +17,7 @@
         android:paddingEnd="12dp"
         android:paddingBottom="8dp">
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/homeBannerCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
             android:visibility="visible"
             app:cardCornerRadius="4dp">
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -67,9 +67,9 @@
                     app:layout_constraintVertical_bias="0.4"
                     android:visibility="gone"
                     tools:visibility="visible"/>
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
         <ProgressBar
             android:id="@+id/homeLoading"
@@ -86,7 +86,7 @@
             android:visibility="gone"
             tools:visibility="visible">
 
-            <android.support.v7.widget.CardView
+            <androidx.cardview.widget.CardView
                 android:id="@+id/currentSubjectCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -99,7 +99,7 @@
                 app:cardCornerRadius="4dp"
                 tools:visibility="visible">
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/currentSubjectCL"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -171,7 +171,7 @@
                         tools:visibility="visible" />
 
 
-                    <android.support.v7.widget.RecyclerView
+                    <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/currentSubjectList"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -181,10 +181,10 @@
                         app:layout_constraintTop_toBottomOf="@id/currentSubjectPlus"
                         tools:visibility="visible" />
 
-                </android.support.constraint.ConstraintLayout>
-            </android.support.v7.widget.CardView>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
 
-            <android.support.v7.widget.CardView
+            <androidx.cardview.widget.CardView
                 android:id="@+id/nextSubjectCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -197,7 +197,7 @@
                 app:cardCornerRadius="4dp"
                 tools:visibility="visible">
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/nextSubjectCL"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -269,7 +269,7 @@
                         app:srcCompat="@drawable/ic_icon_arrow_dropdown" />
 
 
-                    <android.support.v7.widget.RecyclerView
+                    <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/nextSubjectList"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -280,8 +280,8 @@
                         app:layout_constraintTop_toBottomOf="@id/nextSubjectPlus" />
 
 
-                </android.support.constraint.ConstraintLayout>
-            </android.support.v7.widget.CardView>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
         </LinearLayout>
 
         <LinearLayout
@@ -292,7 +292,7 @@
             android:visibility="gone"
             tools:visibility="visible">
 
-            <android.support.v7.widget.CardView
+            <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsNumberCard"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -305,7 +305,7 @@
                 app:cardCornerRadius="4dp"
                 tools:visibility="visible">
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/homeNumberCL"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -352,11 +352,11 @@
                         app:layout_constraintHorizontal_weight="0.4"
                         app:layout_constraintStart_toEndOf="@id/subjectsNumberTitle"
                         app:layout_constraintTop_toTopOf="parent" />
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </android.support.v7.widget.CardView>
+            </androidx.cardview.widget.CardView>
 
-            <android.support.v7.widget.CardView
+            <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsAvgCard"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -369,7 +369,7 @@
                 app:cardCornerRadius="4dp"
                 tools:visibility="visible">
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/homeAvgCL"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -416,9 +416,9 @@
                         app:layout_constraintHorizontal_weight="0.4"
                         app:layout_constraintStart_toEndOf="@id/subjectsAvgTitle"
                         app:layout_constraintTop_toTopOf="parent" />
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </android.support.v7.widget.CardView>
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
@@ -430,7 +430,7 @@
             android:visibility="gone"
             tools:visibility="visible">
 
-            <android.support.v7.widget.CardView
+            <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsLowestCard"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -443,7 +443,7 @@
                 app:cardCornerRadius="4dp"
                 tools:visibility="visible">
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/homeLowestCL"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -490,11 +490,11 @@
                         app:layout_constraintHorizontal_weight="0.4"
                         app:layout_constraintStart_toEndOf="@id/subjectsLowestTitle"
                         app:layout_constraintTop_toTopOf="parent" />
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </android.support.v7.widget.CardView>
+            </androidx.cardview.widget.CardView>
 
-            <android.support.v7.widget.CardView
+            <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsHighestCard"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -507,7 +507,7 @@
                 app:cardCornerRadius="4dp"
                 tools:visibility="visible">
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/homeHighestCL"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -554,9 +554,9 @@
                         app:layout_constraintHorizontal_weight="0.4"
                         app:layout_constraintStart_toEndOf="@id/subjectsHighestTitle"
                         app:layout_constraintTop_toTopOf="parent" />
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </android.support.v7.widget.CardView>
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 

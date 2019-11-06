@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jsoup.helper.StringUtil;
 
 import java.io.Serializable;
 import java.text.ParseException;

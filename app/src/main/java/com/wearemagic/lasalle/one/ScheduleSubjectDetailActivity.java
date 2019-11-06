@@ -2,10 +2,10 @@ package com.wearemagic.lasalle.one;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.wearemagic.lasalle.one.adapters.ExpandableScheduleAdapter;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.SchedulePiece;
@@ -303,71 +304,88 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
 
         @Override
         protected void onPostExecute(ArrayList returnList) {
-            if (returnList != null && !returnList.isEmpty()){
+            if (returnList != null){
+                if (!returnList.isEmpty()) {
 
-                ArrayList<String> localSubjectData = new ArrayList<>();
+                    ArrayList<String> localSubjectData = new ArrayList<>();
 
-                String[] subjectTitle = ((String) returnList.get(0)).split(" - ", 2);
+                    String[] subjectTitle = ((String) returnList.get(0)).split(" - ", 2);
 
-                localSubjectData.add(capitalizeSubjectTitle(WordUtils.capitalizeFully(subjectTitle[1])).trim());
+                    localSubjectData.add(capitalizeSubjectTitle(WordUtils.capitalizeFully(subjectTitle[1])).trim());
 
-                String localCredits = (String) returnList.get(1);
-                localSubjectData.add(localCredits.trim().replace("Credits", "").trim());
+                    String localCredits = (String) returnList.get(1);
+                    localSubjectData.add(localCredits.trim().replace("Credits", "").trim());
 
-                localSubjectData.add(orderName((String) returnList.get(2)).trim());
+                    localSubjectData.add(orderName((String) returnList.get(2)).trim());
 
-                String[] dateRangeList = ((String) returnList.get(3)).split("-");
+                    String[] dateRangeList = ((String) returnList.get(3)).split("-");
 
-                localSubjectData.add(dateToISO(dateRangeList[0]).concat(" / ").concat(dateToISO(dateRangeList[1])).trim());
+                    localSubjectData.add(dateToISO(dateRangeList[0]).concat(" / ").concat(dateToISO(dateRangeList[1])).trim());
 
-                String[] subjectCodes = subjectTitle[0].split("/", 3);
+                    String[] subjectCodes = subjectTitle[0].split("/", 3);
 
-                localSubjectData.add(subjectCodes[2].trim());
-                localSubjectData.add(subjectCodes[0].trim());
+                    localSubjectData.add(subjectCodes[2].trim());
+                    localSubjectData.add(subjectCodes[0].trim());
 
-                subjectData.addAll(localSubjectData);
+                    subjectData.addAll(localSubjectData);
 
-                schedulePieceMap = (HashMap<String, ArrayList<SchedulePiece>>) returnList.get(4);
-                scheduleDayList.clear();
-                scheduleDayList.addAll(schedulePieceMap.keySet());
+                    schedulePieceMap = (HashMap<String, ArrayList<SchedulePiece>>) returnList.get(4);
+                    scheduleDayList.clear();
+                    scheduleDayList.addAll(schedulePieceMap.keySet());
 
-                Collections.sort(scheduleDayList, new Comparator<String>() {
-                    @Override public int compare(String s1, String s2) {
+                    Collections.sort(scheduleDayList, new Comparator<String>() {
+                        @Override public int compare(String s1, String s2) {
 
-                        String[] days = new String[]{s1,s2};
-                        int[] dayIntArray = new int[2];
+                            String[] days = new String[]{s1,s2};
+                            int[] dayIntArray = new int[2];
 
-                        int index = 0;
-                        for (String weekDay: days){
-                            int dayInt = 0;
-                            switch (weekDay) {
-                                case "Lunes": dayInt = 2;
-                                    break;
-                                case "Martes": dayInt = 3;
-                                    break;
-                                case "Miercoles": dayInt = 4;
-                                    break;
-                                case "Jueves": dayInt = 5;
-                                    break;
-                                case "Viernes": dayInt = 6;
-                                    break;
-                                case "Sabado": dayInt = 7;
-                                    break;
-                                case "Domingo": ;
-                                    break;
+                            int index = 0;
+                            for (String weekDay: days){
+                                int dayInt = 0;
+                                switch (weekDay) {
+                                    case "Lunes": dayInt = 2;
+                                        break;
+                                    case "Martes": dayInt = 3;
+                                        break;
+                                    case "Miercoles": dayInt = 4;
+                                        break;
+                                    case "Jueves": dayInt = 5;
+                                        break;
+                                    case "Viernes": dayInt = 6;
+                                        break;
+                                    case "Sabado": dayInt = 7;
+                                        break;
+                                    case "Domingo": ;
+                                        break;
+                                }
+                                dayIntArray[index] = dayInt;
+                                index++;
                             }
-                            dayIntArray[index] = dayInt;
-                            index++;
+
+                            return dayIntArray[0] - dayIntArray[1]; // Ascending
                         }
+                    });
 
-                        return dayIntArray[0] - dayIntArray[1]; // Ascending
+                    fillExpandableList(scheduleDayList, schedulePieceMap);
+                    fillSubjectData(subjectData);
+
+                } else {
+                    if (viewCreated) {
+                        Snackbar noInternetSB = Snackbar
+                                .make(findViewById(R.id.scheduleSubjectDetailLayout), getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        onRefresh();
+                                    }
+                                });
+
+                        noInternetSB.show();
                     }
-                });
-
-                fillExpandableList(scheduleDayList, schedulePieceMap);
-                fillSubjectData(subjectData);
-                swipeRefreshLayout.setRefreshing(false);
+                }
             }
+
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 

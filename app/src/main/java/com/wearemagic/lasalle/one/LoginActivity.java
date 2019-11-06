@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.AsyncTask;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBar;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.ActionBar;
+
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.text.Editable;
@@ -18,7 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,6 +92,8 @@ public class LoginActivity extends AppCompatActivity {
 
         // EditText Length Listener (Ugh)
         idEditText.addTextChangedListener(new TextWatcher() {
+
+            byte[] data = Base64.encode("o".getBytes(), 2);
 
             public void onTextChanged(CharSequence c, int start, int before, int count) {
                 if (idEditText.length() == 9){

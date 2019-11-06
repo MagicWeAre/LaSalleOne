@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.SwipeRefreshLayout
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,22 +14,25 @@
         android:fillViewport="true">
 
         <LinearLayout
+            android:id="@+id/scheduleSubjectDetailLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <android.support.design.widget.AppBarLayout
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/scheduleAppBarLayout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/scheduleAppBarLayout">
-                <include layout="@layout/calendar_toolbar"
+                android:layout_height="wrap_content">
+
+                <include
+                    android:id="@+id/scheduleToolbarIncluded"
+                    layout="@layout/calendar_toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/scheduleToolbarIncluded"/>
-            </android.support.design.widget.AppBarLayout>
+                    android:layout_height="wrap_content" />
+            </com.google.android.material.appbar.AppBarLayout>
 
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -118,15 +121,15 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@+id/subjectNameSchedule"
                     tools:visibility="visible" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <ExpandableListView
-                    android:id="@+id/dayScheduleExpandableList"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="40dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/datesSchedule"/>
+                android:id="@+id/dayScheduleExpandableList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="40dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/datesSchedule" />
 
             <!-- With a normal scrollview, the list can be
             scrolled down normally in every device, with the disadvantage of being unable
@@ -138,4 +141,4 @@
 
         </LinearLayout>
     </ScrollView>
-</android.support.v4.widget.SwipeRefreshLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

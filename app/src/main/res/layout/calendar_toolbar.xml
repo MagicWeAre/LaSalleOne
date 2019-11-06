@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.Toolbar
+<androidx.appcompat.widget.Toolbar
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/scheduleToolbar"
     android:layout_width="match_parent"
@@ -9,4 +9,4 @@
     app:titleTextColor="@color/colorWhite"
     app:title="@string/schedule_activity_title" >
 
-</android.support.v7.widget.Toolbar>
+</androidx.appcompat.widget.Toolbar>
