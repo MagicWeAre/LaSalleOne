@@ -2,16 +2,13 @@ package com.wearemagic.lasalle.one;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.appcompat.app.ActionBar;
-
-import android.util.Base64;
-import android.util.Log;
-import android.view.View;
+import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -19,24 +16,31 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.Toast;
-import android.content.SharedPreferences;
+
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.snackbar.Snackbar;
+
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jsoup.Jsoup;
-import org.jsoup.Connection;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LaSalleOne";
-
     public String packageName = "com.wearemagic.lasalle.one";
+    public String baseURL = "https://miportal.ulsaoaxaca.edu.mx/ss/";
+
     LoginAsyncTaskRunner loginTask = new LoginAsyncTaskRunner(LoginActivity.this);
+
+    private LinearLayout loginLinearLayout;
+    private ProgressBar loginLoading;
 
     private RelativeLayout loginRelativeLayout;
     private Button logInButton;
@@ -54,16 +58,12 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null){
-
             accountUser = savedInstanceState.getString("accountUser");
             accountPass = savedInstanceState.getString("accountPass");
             accountStored = savedInstanceState.getBoolean("accountStored");
             moodleLogin = savedInstanceState.getBoolean("moodleLogin");
-
         } else {
-
             SharedPreferences sharedP = getSharedPreferences(packageName, MODE_PRIVATE);
-
             accountUser = sharedP.getString("accountUser", "");
             accountPass = sharedP.getString("accountPass", "");
 
@@ -75,51 +75,37 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login);
 
-        if (accountStored){
-            Bundle loginBundle = new Bundle();
-
-            loginBundle.putString("idSalle", accountUser);
-            loginBundle.putString("passwordSalle", accountPass);
-            loginBundle.putBoolean("moodleLogin", moodleLogin);
-
-            new LoginAsyncTaskRunner(LoginActivity.this).execute(loginBundle);
-        }
-
+        loginLinearLayout = findViewById(R.id.loginLinearLayout);
+        loginLoading = findViewById(R.id.loginLoading);
         loginRelativeLayout = findViewById(R.id.loginRelativeLayout);
         idEditText = findViewById(R.id.idField);
         passEditText = findViewById(R.id.passwordField);
         logInButton = findViewById(R.id.signInButton);
 
+        if (accountStored){
+            executeLogin(accountUser, accountPass, moodleLogin);
+        }
+
         // EditText Length Listener (Ugh)
         idEditText.addTextChangedListener(new TextWatcher() {
-
-            byte[] data = Base64.encode("o".getBytes(), 2);
-
+            public void beforeTextChanged(CharSequence c, int start, int count, int after) {}
             public void onTextChanged(CharSequence c, int start, int before, int count) {
                 if (idEditText.length() == 9){
                     logInButton.setEnabled(true);
-                } else { logInButton.setEnabled(false); }
+                } else {
+                    logInButton.setEnabled(false);
+                }
             }
-            public void beforeTextChanged(CharSequence c, int start, int count, int after) {}
             public void afterTextChanged(Editable c) {}
         });
 
         // Button Click Listener
-        logInButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Bundle loginBundle = new Bundle();
+        logInButton.setOnClickListener((View v) -> {
+            String idSalle = idEditText.getText().toString();
+            String passwordSalle = passEditText.getText().toString();
 
-                String idSalle = idEditText.getText().toString();
-                String passwordSalle = passEditText.getText().toString();
-
-                loginBundle.putString("idSalle", idSalle);
-                loginBundle.putString("passwordSalle", passwordSalle);
-                loginBundle.putBoolean("moodleLogin", moodleLogin);
-
-                new LoginAsyncTaskRunner(LoginActivity.this).execute(loginBundle);
-            }
+            executeLogin(idSalle, passwordSalle, moodleLogin);
         });
-
     }
 
     @Override
@@ -131,33 +117,113 @@ public class LoginActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
-    public void prepareLogin(){
-        if (accountStored){
-            Bundle loginBundle = new Bundle();
+    public void executeLogin(String user, String pass, Boolean moodle){
+        Bundle loginBundle = new Bundle();
 
-            loginBundle.putString("idSalle", accountUser);
-            loginBundle.putString("passwordSalle", accountPass);
-            loginBundle.putBoolean("moodleLogin", moodleLogin);
+        loginBundle.putString("idSalle", user);
+        loginBundle.putString("passwordSalle", pass);
 
-            new LoginAsyncTaskRunner(LoginActivity.this).execute(loginBundle);
+        loginBundle.putBoolean("moodleLogin", moodle);
 
-        } else {
-            Bundle loginBundle = new Bundle();
+        new LoginAsyncTaskRunner(LoginActivity.this).execute(loginBundle);
+    }
 
-            String idSalle = idEditText.getText().toString();
-            String passwordSalle = passEditText.getText().toString();
+    public String doLogin(String id, String pass) throws IOException {
 
-            loginBundle.putString("idSalle", idSalle);
-            loginBundle.putString("passwordSalle", passwordSalle);
-            loginBundle.putBoolean("moodleLogin", moodleLogin);
+        Connection.Response loginPageGet = Jsoup.connect(baseURL.concat("Home.aspx"))
+                .method(Connection.Method.GET)
+                .execute();
 
-            new LoginAsyncTaskRunner(LoginActivity.this).execute(loginBundle);
+        Document loginDocument = loginPageGet.parse();
+
+        Element eventValidation = loginDocument.select("input[name=__EVENTVALIDATION]").first();
+        Element viewState = loginDocument.select("input[name=__VIEWSTATE]").first();
+
+        Connection.Response loginPagePost = Jsoup.connect(baseURL.concat("Home.aspx"))
+                .method(Connection.Method.POST)
+                .data("ctl00$ucUserLogin$lvLoginUser$ucLoginUser$lcLoginUser$UserName", id)
+                .data("ctl00$ucUserLogin$lvLoginUser$ucLoginUser$lcLoginUser$Password", pass)
+                .data("ctl00$ucUserLogin$lvLoginUser$ucLoginUser$lcLoginUser$LoginButton", "Log+In")
+                .data("__VIEWSTATE", viewState.attr("value"))
+                .data("__EVENTVALIDATION", eventValidation.attr("value"))
+                .execute();
+
+        String serviceCookie = loginPagePost.cookie("SelfService");
+
+        return serviceCookie;
+    }
+
+    public String doMoodleLogin(String id, String pass) throws IOException {
+
+        String moodleURL = "http://micurso.ulsaoaxaca.edu.mx/login/index.php";
+
+        Connection.Response firstResponse = Jsoup.connect(moodleURL)
+                .method(Connection.Method.GET)
+                .execute();
+
+        String firstMoodleCookie = firstResponse.cookie("MoodleSession");
+
+        Map<String, String> firstCookieMap = new HashMap<>();
+        firstCookieMap.put("MoodleSession", firstMoodleCookie);
+
+        Document firstDocument = firstResponse.parse();
+
+        Element logintoken = firstDocument.select("input[name=logintoken]").first();
+
+        Connection.Response loginPost = Jsoup.connect(moodleURL)
+                .method(Connection.Method.POST)
+                .cookies(firstCookieMap)
+                .data("username", id)
+                .data("password", pass)
+                .data("logintoken", logintoken.attr("value"))
+                .execute();
+
+        String secondMoodleCookie = loginPost.cookie("MoodleSession");
+
+        return secondMoodleCookie;
+    }
+
+    private void sendErrorCode(String errorCode) {
+        switch (errorCode) {
+            case "ERROR_NO_INTERNET_CONNECTION":
+                Snackbar noInternetSB = Snackbar
+                    .make(loginRelativeLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                    .setAction(getString(R.string.retry_internet_connection), (View view) -> {
+
+                        String user, password;
+                        if (accountStored){
+                            user = accountUser;
+                            password = accountPass;
+                        } else {
+                            user = idEditText.getText().toString();
+                            password = passEditText.getText().toString();
+                        }
+
+                        executeLogin(user, password, moodleLogin);
+                    });
+
+                noInternetSB.show();
+                break;
+            case "ERROR_INCORRECT_LOGIN":
+                Toast.makeText(getApplicationContext(), getString(R.string.error_incorrect_login), Toast.LENGTH_SHORT).show();
+                break;
         }
+    }
+
+    protected boolean saveLogin(String id, String pass){
+        boolean idSaveOp = false;
+        boolean passSaveOp = false;
+
+        SharedPreferences sharedP = getSharedPreferences(packageName, MODE_PRIVATE);
+
+        idSaveOp = sharedP.edit().putString("accountUser", id).commit();
+        passSaveOp = sharedP.edit().putString("accountPass", pass).commit();
+
+        return idSaveOp && passSaveOp;
     }
 
     private class LoginAsyncTaskRunner extends AsyncTask<Bundle, String, String[]> {
 
-        private Exception e;
         private Activity activity;
 
         private LoginAsyncTaskRunner(Activity activity) {
@@ -165,9 +231,20 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onPreExecute() {
+            loginLinearLayout.setVisibility(View.GONE);
+            loginLoading.setVisibility(View.VISIBLE);
+            ActionBar actionBar = getSupportActionBar();
+
+            if (actionBar != null) {
+                actionBar.hide();
+            }
+        }
+
+        @Override
         protected String[] doInBackground(Bundle... params) {
             Bundle loginBundle = params[0];
-            Boolean moodleLogin = false;
+            Boolean moodleLogin;
 
             String idS = loginBundle.getString("idSalle");
             String passwordS = loginBundle.getString("passwordSalle");
@@ -188,7 +265,6 @@ public class LoginActivity extends AppCompatActivity {
             return returnArray;
         }
 
-
         @Override
         protected void onPostExecute(String[] returnArray) {
 
@@ -197,43 +273,9 @@ public class LoginActivity extends AppCompatActivity {
             String sessionC = returnArray[2];
 
             Switch passSwitch = findViewById(R.id.passwordSwitch);
-            LinearLayout linearLayout = findViewById(R.id.loginLinearLayout);
-            ProgressBar progressBar = findViewById(R.id.loginLoading);
             ActionBar actionBar = getSupportActionBar();
 
-            if (sessionC == null){
-                linearLayout.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-                actionBar.show();
-
-                Toast.makeText(getApplicationContext(), getString(R.string.error_incorrect_login), Toast.LENGTH_SHORT).show();
-            }
-
-            else if(sessionC.isEmpty()){
-                linearLayout.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-                if(accountStored){
-                    idEditText.setText(accountUser);
-                    passEditText.setText(accountPass);
-                    logInButton.setEnabled(false);
-                }
-                actionBar.show();
-
-                Snackbar noInternetSB = Snackbar
-                        .make(loginRelativeLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
-                        .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                prepareLogin();
-                            }
-                        });
-
-                noInternetSB.show();
-
-                //Toast.makeText(getApplicationContext(), getString(R.string.error_internet_failure), Toast.LENGTH_SHORT).show();
-            }
-
-            else {
+            if (sessionC != null && !sessionC.isEmpty()) {
                 Log.d(TAG, sessionC);
 
                 if (passSwitch.isChecked()){
@@ -250,91 +292,29 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(i);
                 finish();
             }
+
+            else {
+                loginLinearLayout.setVisibility(View.VISIBLE);
+                loginLoading.setVisibility(View.GONE);
+
+                if (actionBar!= null) {
+                    actionBar.show();
+                }
+
+                if (sessionC == null){
+                    sendErrorCode("ERROR_INCORRECT_LOGIN");
+                }
+
+                else if(sessionC.isEmpty()){
+                    sendErrorCode("ERROR_NO_INTERNET_CONNECTION");
+
+                    if(accountStored){
+                        idEditText.setText(accountUser);
+                        passEditText.setText(accountPass);
+                        logInButton.setEnabled(false);
+                    }
+                }
+            }
         }
-
-
-        @Override
-        protected void onPreExecute() {
-
-            LinearLayout linearLayout = findViewById(R.id.loginLinearLayout);
-            ProgressBar progressBar = findViewById(R.id.loginLoading);
-
-            linearLayout.setVisibility(View.GONE);
-            progressBar.setVisibility(View.VISIBLE);
-            ActionBar actionBar = getSupportActionBar();
-            actionBar.hide();
-
-        }
-
-
-        @Override
-        protected void onProgressUpdate(String... text) {
-        }
-    }
-
-    public String doLogin(String id, String pass) throws IOException {
-
-        Connection.Response loginPageGet = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Home.aspx")
-                .method(Connection.Method.GET)
-                .execute();
-
-        Document loginDocument = loginPageGet.parse();
-
-        Element eventValidation = loginDocument.select("input[name=__EVENTVALIDATION]").first();
-        Element viewState = loginDocument.select("input[name=__VIEWSTATE]").first();
-
-        Connection.Response loginPagePost = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Home.aspx")
-                .method(Connection.Method.POST)
-                .data("ctl00$ucUserLogin$lvLoginUser$ucLoginUser$lcLoginUser$UserName", id)
-                .data("ctl00$ucUserLogin$lvLoginUser$ucLoginUser$lcLoginUser$Password", pass)
-                .data("ctl00$ucUserLogin$lvLoginUser$ucLoginUser$lcLoginUser$LoginButton", "Log+In")
-                .data("__VIEWSTATE", viewState.attr("value"))
-                .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                .execute();
-
-        String serviceCookie = loginPagePost.cookie("SelfService");
-
-        return serviceCookie;
-    }
-
-    public String doMoodleLogin(String id, String pass) throws IOException {
-
-        Connection.Response firstResponse = Jsoup.connect("http://micurso.ulsaoaxaca.edu.mx/login/index.php")
-                .method(Connection.Method.GET)
-                .execute();
-
-        String firstMoodleCookie = firstResponse.cookie("MoodleSession");
-
-        Map<String, String> firstCookieMap = new HashMap<String, String>();
-        firstCookieMap.put("MoodleSession", firstMoodleCookie);
-
-        Document firstDocument = firstResponse.parse();
-
-        Element logintoken = firstDocument.select("input[name=logintoken]").first();
-
-        Connection.Response loginPost = Jsoup.connect("http://micurso.ulsaoaxaca.edu.mx/login/index.php")
-                .method(Connection.Method.POST)
-                .cookies(firstCookieMap)
-                .data("username", id)
-                .data("password", pass)
-                .data("logintoken", logintoken.attr("value"))
-                .execute();
-
-        String secondMoodleCookie = loginPost.cookie("MoodleSession");
-
-        return secondMoodleCookie;
-    }
-
-
-    protected boolean saveLogin(String id, String pass){
-        boolean idSaveOp = false;
-        boolean passSaveOp = false;
-
-        SharedPreferences sharedP = getSharedPreferences(packageName, MODE_PRIVATE);
-
-        idSaveOp = sharedP.edit().putString("accountUser", id).commit();
-        passSaveOp = sharedP.edit().putString("accountPass", pass).commit();
-
-        return idSaveOp && passSaveOp;
     }
 }
