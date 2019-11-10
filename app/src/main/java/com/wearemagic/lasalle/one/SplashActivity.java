@@ -14,13 +14,18 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences sharedP = getSharedPreferences(packageName, MODE_PRIVATE);
-
         int nightMode = sharedP.getInt("nightMode", -1);
 
-        AppCompatDelegate.setDefaultNightMode(nightMode);
-        super.onCreate(savedInstanceState);
+        int currentNightMode = AppCompatDelegate.getDefaultNightMode();
+
+        if (currentNightMode != nightMode) {
+            AppCompatDelegate.setDefaultNightMode(nightMode);
+        }
 
         startActivity(new Intent(this, MainActivity.class));
         finish();
+
+
+        super.onCreate(savedInstanceState);
     }
 }

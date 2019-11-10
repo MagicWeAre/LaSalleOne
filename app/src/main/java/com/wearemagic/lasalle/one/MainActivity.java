@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Retrieve Intent Bundle data for Login details
         Bundle loginBundle = getIntent().getExtras();
 
-        if(loginBundle == null){
+        if (loginBundle == null){
            onRedoLogin();
         }
 
@@ -136,11 +136,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (savedInstanceState != null) {
                 if (sessionCookie.isEmpty()) {
                     sessionCookie = savedInstanceState.getString("sessionCookie");
-                }
-                if (moodleCookie.isEmpty()) {
+                } if (moodleCookie.isEmpty()) {
                     moodleCookie = savedInstanceState.getString("moodleCookie");
-                }
-                if (salleId.isEmpty()) {
+                } if (salleId.isEmpty()) {
                     salleId = savedInstanceState.getString("salleId");
                 }
 
@@ -198,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             drawerToggle.setDrawerIndicatorEnabled(true);
             drawerToggle.setDrawerSlideAnimationEnabled(false);
 
-            if(getSupportActionBar() != null){
+            if (getSupportActionBar() != null){
                 getSupportActionBar().setDisplayShowHomeEnabled(true);
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 

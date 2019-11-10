@@ -95,18 +95,6 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
     }
 
     @Override
-    public void onDestroy() {
-        if (parcialTask != null){
-            parcialTask.cancel(true);
-            parcialTask = null;}
-
-        if(swipeRefreshLayout != null){
-            swipeRefreshLayout.setRefreshing(false);}
-
-        super.onDestroy();
-    }
-
-    @Override
     public void onResume() {
         if (parcialGradeList.isEmpty()){
             onRefresh();
@@ -117,6 +105,18 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
             swipeRefreshLayout.setRefreshing(false);
         }
         super.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (parcialTask != null){
+            parcialTask.cancel(true);
+            parcialTask = null;}
+
+        if(swipeRefreshLayout != null){
+            swipeRefreshLayout.setRefreshing(false);}
+
+        super.onDestroy();
     }
 
     @Override
@@ -298,7 +298,7 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
 
             String instructorName = parcialGradeDocument.getElementsByAttributeValue("style", "font-size:0.6em;").first().text();
 
-            //Not-so inside joke
+            // Not-so inside joke
             if (instructorName.contains("FORTINO")) {
                 instructorName = instructorName.replace("FORTINO", "FORTNITO");
             }
@@ -314,7 +314,7 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
         ArrayList<ParcialGrade> returnList = new ArrayList<>();
 
         try {
-            //Rows for each subject (Parciales Y Semestral)
+            // Rows for each subject (Parciales Y Semestral)
             Elements courseInfoRows = parcialGradeDocument.getElementById("resultsFinalByType3").getElementsByTag("tr");
             Elements finalCourseInfoRows = parcialGradeDocument.getElementById("resultsFinalByType4").getElementsByTag("tr");
             courseInfoRows.remove(0);

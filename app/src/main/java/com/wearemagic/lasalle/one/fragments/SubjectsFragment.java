@@ -351,7 +351,7 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
 
                     // Convert to objects and compare
 
-                    SimpleDateFormat isoTime = new SimpleDateFormat("hh:mm", Locale.US);
+                    SimpleDateFormat isoTime = new SimpleDateFormat("HH:mm", Locale.US);
                     String startTimeString =  classOfDay.getStartHour();
                     String endTimeString =  classOfDay.getEndHour();
 
