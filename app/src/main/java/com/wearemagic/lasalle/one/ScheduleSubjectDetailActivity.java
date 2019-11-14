@@ -33,6 +33,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.wearemagic.lasalle.one.common.CommonStrings.baseURL;
+
 public class ScheduleSubjectDetailActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
     private static final String TAG = "LaSalleOne";
     private ScheduleAsyncTaskRunner scheduleTask = new ScheduleAsyncTaskRunner();
@@ -393,8 +395,9 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
     private Document getScheduleDocument(String serviceCookie, String periodCode, String numericCode) throws IOException, LoginTimeoutException {
         Map<String, String> cookies = new HashMap<>();
         cookies.put("SelfService", serviceCookie);
+        String appendedURL =  "Records/ClassSchedule.aspx";
 
-        Connection.Response schedulePageGet = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Records/ClassSchedule.aspx")
+        Connection.Response schedulePageGet = Jsoup.connect(baseURL + appendedURL)
                 .method(Connection.Method.GET)
                 .cookies(cookies)
                 .execute();
@@ -408,7 +411,7 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
         Element viewState = scheduleDocument.select("input[name=__VIEWSTATE]").first();
         Element eventValidation = scheduleDocument.select("input[name=__EVENTVALIDATION]").first();
 
-        Document scheduleDocumentPost = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Records/ClassSchedule.aspx")
+        Document scheduleDocumentPost = Jsoup.connect(baseURL + appendedURL)
 
                 .data("ctl00$pageOptionsZone$ddlbPeriods", periodCode)
                 .data("__EVENTARGUMENT", numericCode)

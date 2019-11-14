@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.wearemagic.lasalle.one.common.CommonStrings.baseURL;
+
 public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, ScheduleSubjectAdapter.OnGSListener{
     private static final String TAG = "LaSalleOne";
     private SubjectsListener listener;
@@ -63,6 +65,7 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
     private String sessionCookie = "";
     private int spinnerPosition = 0;
     private boolean viewCreated;
+    private boolean firstGet = true;
 
     public SubjectsFragment() { }
 
@@ -79,6 +82,7 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
             sessionCookie = savedInstanceState.getString("sessionCookie");
             spinnerPosition = savedInstanceState.getInt("spinnerPosition");
             scheduleSubjectArrayList = savedInstanceState.getParcelableArrayList("scheduleSubjectArrayList");
+            firstGet = savedInstanceState.getBoolean("firstGet");
         }
         setHasOptionsMenu(true);
     }
@@ -147,6 +151,7 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
         outState.putInt("spinnerPosition", spinnerPosition);
         outState.putStringArrayList("periodValueList", periodValueList);
         outState.putParcelableArrayList("scheduleSubjectArrayList", scheduleSubjectArrayList);
+        outState.putBoolean("firstGet", firstGet);
         super.onSaveInstanceState(outState);
     }
 
@@ -209,84 +214,124 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
         spinnerPosition = spinnerPos;
     }
 
-    private class SubjectsAsyncTaskRunner extends AsyncTask<String, String, ArrayList<ScheduleSubject>> {
+    public ArrayList<ScheduleSubject> getSubjects(String serviceCookie, String period, boolean showText) throws IOException, LoginTimeoutException {
+        ArrayList<ScheduleSubject> returnList = new ArrayList<>();
+        String appendedURL = "Records/ClassSchedule.aspx";
 
-        @Override
-        protected void onPreExecute() {
-            swipeRefreshLayout.setRefreshing(true);
+        Map<String, String> cookies = new HashMap<String, String>();
+        cookies.put("SelfService", serviceCookie);
+
+        Connection.Response subjectsPageGet = Jsoup.connect(baseURL + appendedURL)
+                .method(Connection.Method.GET)
+                .cookies(cookies)
+                .execute();
+
+        Document subjectsDocument = subjectsPageGet.parse();
+
+        if(subjectsDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
+            throw new LoginTimeoutException();
         }
 
-        @Override
-        protected ArrayList<ScheduleSubject> doInBackground(String... params) {
-            String serviceCookie = params[0];
+        Element viewState = subjectsDocument.select("input[name=__VIEWSTATE]").first();
+        Element eventValidation = subjectsDocument.select("input[name=__EVENTVALIDATION]").first();
 
-            ArrayList<ScheduleSubject> returnList = new ArrayList<>();
-            boolean doBackgroundFinished = false;
+        if (firstGet) {
+            Jsoup.connect(baseURL + appendedURL)
+                    .data("ctl00$pageOptionsZone$ddlbPeriods", period)
+                    .data("__EVENTTARGET", "ShowText")
+                    .data("__VIEWSTATE", viewState.attr("value"))
+                    .data("__EVENTVALIDATION", eventValidation.attr("value"))
+                    .cookies(cookies)
+                    .post();
+            firstGet = false;
+        }
+        Document subjectsDocumentPost = Jsoup.connect(baseURL + appendedURL)
+                .data("ctl00$pageOptionsZone$ddlbPeriods", period)
+                .data("__EVENTTARGET", "ctl00$pageOptionsZone$ddlbPeriods")
+                .data("__VIEWSTATE", viewState.attr("value"))
+                .data("__EVENTVALIDATION", eventValidation.attr("value"))
+                .cookies(cookies)
+                .post();
 
-            while (!doBackgroundFinished){
-                if (isCancelled()) break;
+        Element subjectsTable = subjectsDocumentPost.getElementsByAttributeValue("style", "table-layout:fixed").first();
+        Elements subjectNames = subjectsTable.getElementsByAttribute("title");
+        Elements durations = subjectsTable.getElementsMatchingOwnText("Duration");
+        Elements credits = subjectsTable.getElementsMatchingOwnText("Credits");
+        Elements instructors = subjectsTable.getElementsMatchingOwnText("Instructors");
+        Elements preScheduleTables = subjectsTable.getElementsByAttributeValue("align", "left");
 
-                try {
-                    String periodArgument = periodValueList.get(spinnerPosition);
-                    returnList = getSubjects(serviceCookie, periodArgument);
-                } catch (IOException e) {
-                    Log.e(TAG, "IOException on SubjectsAsyncTask");
-                } catch (IndexOutOfBoundsException e){
-                   Log.e(TAG, "IndexOutOfBoundsException on SubjectsAsyncTask");
-                } catch (NullPointerException np) {
-                    Log.d(TAG, "NullPointerException on SubjectsAsyncTask");
-                    returnList = null;
-                } catch (LoginTimeoutException lt) {
-                    Log.d(TAG, "LoginTimeoutException on SubjectsAsyncTask");
-                    if (getActivity() != null){
-                        listener.onRedoLogin();
+        ArrayList<String> scheduleNameList = new ArrayList<>();
+        ArrayList<String> scheduleNumericCodeList = new ArrayList<>();
+        ArrayList<String> scheduleDurationList = new ArrayList<>();
+        ArrayList<String> scheduleCreditList = new ArrayList<>();
+        ArrayList<String> scheduleInstructorList = new ArrayList<>();
+        ArrayList<ArrayList<SchedulePiece>> schedulePieceList = new ArrayList<>();
+
+        for (Element subject : subjectNames) {
+            if (!subject.text().isEmpty()) {
+                scheduleNameList.add(subject.text());
+                scheduleNumericCodeList.add(subject.attr("href").split("'")[3]);
+            }
+        }
+
+        for (Element duration : durations) {
+            String durationStr = duration.parent().ownText();
+            if (!durationStr.isEmpty()) {
+                scheduleDurationList.add(durationStr);
+            }
+        }
+
+        for (Element credit : credits) {
+            String creditStr = credit.parent().ownText();
+            if (!creditStr.isEmpty()) {
+                scheduleCreditList.add(creditStr);
+            }
+        }
+
+        for (Element instructor : instructors) {
+            String instructorStr = instructor.parent().ownText();
+                scheduleInstructorList.add(instructorStr);
+        }
+
+        for (Element scheduleTable : preScheduleTables) {
+            ArrayList<SchedulePiece> schedulePieces = new ArrayList<>();
+
+            String scheduleStr = scheduleTable.nextElementSibling().html();
+
+            if (!scheduleStr.isEmpty()) {
+
+                String[] pieces = scheduleStr.split("<br>");
+
+                for (String piece : pieces) {
+                    if (!piece.isEmpty()) {
+                        SchedulePiece newSchedulePiece = new SchedulePiece(piece.replace("&nbsp;", "").trim());
+                        schedulePieces.add(newSchedulePiece);
                     }
                 }
-
-                doBackgroundFinished = true;
-            }
-            return returnList;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<ScheduleSubject> returnList) {
-            if (returnList != null){
-                if (!returnList.isEmpty()){
-
-                    ArrayList homeList = new ArrayList();
-                    homeList.add(String.valueOf(returnList.size()));
-
-                    ArrayList<ArrayList<ScheduleSubject>> homeDates = getSubjectsByDate(returnList);
-
-                    homeList.add(homeDates.get(0));
-                    homeList.add(homeDates.get(1));
-
-                    listener.onSubjectInfoSent(homeList);
-
-                    scheduleSubjectArrayList = returnList;
-                    fillSubjects(returnList);
-                } else {
-                    if (viewCreated) {
-                        Snackbar noInternetSB = Snackbar
-                                .make(getActivity().findViewById(R.id.mainFrameLayout), getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
-                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        onRefresh();
-                                    }
-                                });
-
-                        noInternetSB.show();
-                    }
-                }
-            } else {
-                emptyMessage.setText(getString(R.string.error_parsing_data));
-                emptyMessage.setVisibility(View.VISIBLE);
             }
 
-            swipeRefreshLayout.setRefreshing(false);
-
+            schedulePieceList.add(schedulePieces);
         }
+
+        int rowNumber = 0;
+        for (String subjectName : scheduleNameList) {
+            String subjectNumericCode = scheduleNumericCodeList.get(rowNumber);
+            String subjectDuration = scheduleDurationList.get(rowNumber);
+            String subjectCredit = scheduleCreditList.get(rowNumber);
+            String subjectInstructor = scheduleInstructorList.get(rowNumber);
+            ArrayList<SchedulePiece> subjectSchedule = schedulePieceList.get(rowNumber);
+
+            ScheduleSubject scheduleSubject = new ScheduleSubject(subjectName, subjectDuration,
+                subjectCredit, subjectInstructor, subjectNumericCode, period);
+
+            scheduleSubject.setScheduleList(subjectSchedule);
+
+            returnList.add(scheduleSubject);
+
+            rowNumber++;
+        }
+
+        return returnList;
     }
 
     private void setEmptyMessage() {
@@ -434,120 +479,83 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
         return cal.getTime();
     }
 
-    public ArrayList<ScheduleSubject> getSubjects(String serviceCookie, String period) throws IOException, LoginTimeoutException {
-        ArrayList<ScheduleSubject> returnList = new ArrayList<>();
+    private class SubjectsAsyncTaskRunner extends AsyncTask<String, String, ArrayList<ScheduleSubject>> {
 
-        Map<String, String> cookies = new HashMap<String, String>();
-        cookies.put("SelfService", serviceCookie);
-
-        Connection.Response subjectsPageGet = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Records/ClassSchedule.aspx")
-                .method(Connection.Method.GET)
-                .cookies(cookies)
-                .execute();
-
-        Document subjectsDocument = subjectsPageGet.parse();
-
-        if(subjectsDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
-            throw new LoginTimeoutException();
+        @Override
+        protected void onPreExecute() {
+            swipeRefreshLayout.setRefreshing(true);
         }
 
-        Element viewState = subjectsDocument.select("input[name=__VIEWSTATE]").first();
-        Element eventValidation = subjectsDocument.select("input[name=__EVENTVALIDATION]").first();
+        @Override
+        protected ArrayList<ScheduleSubject> doInBackground(String... params) {
+            String serviceCookie = params[0];
 
-        Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Records/ClassSchedule.aspx")
-                .data("ctl00$pageOptionsZone$ddlbPeriods", period)
-                .data("__EVENTTARGET", "ShowText")
-                .data("__VIEWSTATE", viewState.attr("value"))
-                .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                .cookies(cookies)
-                .post();
+            ArrayList<ScheduleSubject> returnList = new ArrayList<>();
+            boolean doBackgroundFinished = false;
 
-        Document subjectsDocumentPost = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Records/ClassSchedule.aspx")
-                .data("ctl00$pageOptionsZone$ddlbPeriods", period)
-                .data("__EVENTTARGET", "ctl00$pageOptionsZone$ddlbPeriods")
-                .data("__VIEWSTATE", viewState.attr("value"))
-                .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                .cookies(cookies)
-                .post();
+            while (!doBackgroundFinished){
+                if (isCancelled()) break;
 
-        Element subjectsTable = subjectsDocumentPost.getElementsByAttributeValue("style", "table-layout:fixed").first();
-        Elements subjectNames = subjectsTable.getElementsByAttribute("title");
-        Elements durations = subjectsTable.getElementsMatchingOwnText("Duration");
-        Elements credits = subjectsTable.getElementsMatchingOwnText("Credits");
-        Elements instructors = subjectsTable.getElementsMatchingOwnText("Instructors");
-        Elements preScheduleTables = subjectsTable.getElementsByAttributeValue("align", "left");
-
-        ArrayList<String> scheduleNameList = new ArrayList<>();
-        ArrayList<String> scheduleNumericCodeList = new ArrayList<>();
-        ArrayList<String> scheduleDurationList = new ArrayList<>();
-        ArrayList<String> scheduleCreditList = new ArrayList<>();
-        ArrayList<String> scheduleInstructorList = new ArrayList<>();
-        ArrayList<ArrayList<SchedulePiece>> schedulePieceList = new ArrayList<>();
-
-        for (Element subject : subjectNames) {
-            if (!subject.text().isEmpty()) {
-                scheduleNameList.add(subject.text());
-                scheduleNumericCodeList.add(subject.attr("href").split("'")[3]);
-            }
-        }
-
-        for (Element duration : durations) {
-            String durationStr = duration.parent().ownText();
-            if (!durationStr.isEmpty()) {
-                scheduleDurationList.add(durationStr);
-            }
-        }
-
-        for (Element credit : credits) {
-            String creditStr = credit.parent().ownText();
-            if (!creditStr.isEmpty()) {
-                scheduleCreditList.add(creditStr);
-            }
-        }
-
-        for (Element instructor : instructors) {
-            String instructorStr = instructor.parent().ownText();
-                scheduleInstructorList.add(instructorStr);
-        }
-
-        for (Element scheduleTable : preScheduleTables) {
-            ArrayList<SchedulePiece> schedulePieces = new ArrayList<>();
-
-            String scheduleStr = scheduleTable.nextElementSibling().html();
-
-            if (!scheduleStr.isEmpty()) {
-
-                String[] pieces = scheduleStr.split("<br>");
-
-                for (String piece : pieces) {
-                    if (!piece.isEmpty()) {
-                        SchedulePiece newSchedulePiece = new SchedulePiece(piece.replace("&nbsp;", "").trim());
-                        schedulePieces.add(newSchedulePiece);
+                try {
+                    String periodArgument = periodValueList.get(spinnerPosition);
+                    returnList = getSubjects(serviceCookie, periodArgument, firstGet);
+                } catch (IOException e) {
+                    Log.e(TAG, "IOException on SubjectsAsyncTask");
+                } catch (IndexOutOfBoundsException e){
+                   Log.e(TAG, "IndexOutOfBoundsException on SubjectsAsyncTask");
+                } catch (NullPointerException np) {
+                    Log.d(TAG, "NullPointerException on SubjectsAsyncTask");
+                    returnList = null;
+                } catch (LoginTimeoutException lt) {
+                    Log.d(TAG, "LoginTimeoutException on SubjectsAsyncTask");
+                    if (getActivity() != null){
+                        listener.onRedoLogin();
                     }
                 }
+
+                doBackgroundFinished = true;
+            }
+            return returnList;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<ScheduleSubject> returnList) {
+            if (returnList != null){
+                if (!returnList.isEmpty()){
+
+                    ArrayList homeList = new ArrayList();
+                    homeList.add(String.valueOf(returnList.size()));
+
+                    ArrayList<ArrayList<ScheduleSubject>> homeDates = getSubjectsByDate(returnList);
+
+                    homeList.add(homeDates.get(0));
+                    homeList.add(homeDates.get(1));
+
+                    listener.onSubjectInfoSent(homeList);
+
+                    scheduleSubjectArrayList = returnList;
+                    fillSubjects(returnList);
+                } else {
+                    if (viewCreated) {
+                        Snackbar noInternetSB = Snackbar
+                                .make(getActivity().findViewById(R.id.mainFrameLayout), getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        onRefresh();
+                                    }
+                                });
+
+                        noInternetSB.show();
+                    }
+                }
+            } else {
+                emptyMessage.setText(getString(R.string.error_parsing_data));
+                emptyMessage.setVisibility(View.VISIBLE);
             }
 
-            schedulePieceList.add(schedulePieces);
+            swipeRefreshLayout.setRefreshing(false);
+
         }
-
-        int rowNumber = 0;
-        for (String subjectName : scheduleNameList) {
-            String subjectNumericCode = scheduleNumericCodeList.get(rowNumber);
-            String subjectDuration = scheduleDurationList.get(rowNumber);
-            String subjectCredit = scheduleCreditList.get(rowNumber);
-            String subjectInstructor = scheduleInstructorList.get(rowNumber);
-            ArrayList<SchedulePiece> subjectSchedule = schedulePieceList.get(rowNumber);
-
-            ScheduleSubject scheduleSubject = new ScheduleSubject(subjectName, subjectDuration,
-                subjectCredit, subjectInstructor, subjectNumericCode, period);
-
-            scheduleSubject.setScheduleList(subjectSchedule);
-
-            returnList.add(scheduleSubject);
-
-            rowNumber++;
-        }
-
-        return returnList;
     }
 }

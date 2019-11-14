@@ -52,6 +52,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 
+import static com.wearemagic.lasalle.one.common.CommonStrings.baseURL;
+
 public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = "LaSalleOne";
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -539,14 +541,13 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
     }
 
     private ArrayList<String> getProfile(String sessionCookie) throws IOException, LoginTimeoutException {
-
         String idBase = "ctl00_mainContentZone_LoginInformationControl_LoginInfoFormView_";
         String addressBase = "ctl00_mainContentZone_ucEditAddress_";
 
         Map<String, String> cookies = new HashMap<>();
         cookies.put("SelfService", sessionCookie);
 
-        Document perfilDocument = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Account/LoginInformation.aspx")
+        Document perfilDocument = Jsoup.connect(baseURL + "Account/LoginInformation.aspx")
                 .cookies(cookies)
                 .get();
 
@@ -561,7 +562,7 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
         Element lastNamePrefix = perfilDocument.getElementById(idBase + "LastNamePrefixField_LastNamePrefixFieldValueLabel");
         Element email = perfilDocument.getElementById(idBase + "EmailField_EmailFieldValueLabel");
 
-        Document phoneDocument = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Account/PhoneNumbers.aspx")
+        Document phoneDocument = Jsoup.connect(baseURL + "Account/PhoneNumbers.aspx")
                 .cookies(cookies)
                 .get();
 
@@ -575,14 +576,14 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
         if (otherPhoneTable != null) {
             phones.put(otherPhoneTable.getElementsByTag("td").get(0).text(), otherPhoneTable.getElementsByTag("td").get(2).text()); }
 
-        Document curpDocument = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Records/Transcripts.aspx")
+        Document curpDocument = Jsoup.connect(baseURL + "Records/Transcripts.aspx")
                 .cookies(cookies)
                 .get();
 
         Element curpElement = curpDocument.getElementsByAttribute("colspan").first().nextElementSibling();
         String curp = curpElement.text().replace("ID:", "").trim();
 
-        /*Document addressDocument = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Account/ChangeAddress.aspx")
+        /*Document addressDocument = Jsoup.connect(baseURL + "Account/ChangeAddress.aspx")
                 .cookies(cookies)
                 .get();
 

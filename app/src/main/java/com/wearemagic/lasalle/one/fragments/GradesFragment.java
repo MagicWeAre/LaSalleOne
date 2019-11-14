@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.wearemagic.lasalle.one.GradeSubjectDetailActivity;
 import com.wearemagic.lasalle.one.R;
 import com.wearemagic.lasalle.one.adapters.GradeSubjectAdapter;
+import com.wearemagic.lasalle.one.common.CommonStrings;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.GradeSubject;
 
@@ -318,7 +319,7 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
         Map<String, String> cookies = new HashMap<>();
         cookies.put("SelfService", serviceCookie);
 
-        Connection.Response balancePageGet = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Records/GradeReport.aspx")
+        Connection.Response balancePageGet = Jsoup.connect(CommonStrings.baseURL + "Records/GradeReport.aspx")
                 .method(Connection.Method.GET)
                 .cookies(cookies)
                 .execute();
@@ -332,7 +333,7 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
         Element viewState = gradesDocument.select("input[name=__VIEWSTATE]").first();
         Element eventValidation = gradesDocument.select("input[name=__EVENTVALIDATION]").first();
 
-        Document gradesDocumentPost = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Records/GradeReport.aspx")
+        Document gradesDocumentPost = Jsoup.connect(CommonStrings.baseURL + "Records/GradeReport.aspx")
 
                 .data("ctl00$pageOptionsZone$GradeReportOptions$SubmitButton", "Submit")
                 .data("ctl00$pageOptionsZone$GradeReportOptions$PeriodDropDown", period)

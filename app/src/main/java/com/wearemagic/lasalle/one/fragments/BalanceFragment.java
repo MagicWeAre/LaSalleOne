@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.wearemagic.lasalle.one.R;
 import com.wearemagic.lasalle.one.adapters.SummaryTypeAdapter;
+import com.wearemagic.lasalle.one.common.CommonStrings;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.SummaryType;
 
@@ -337,7 +338,7 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
         Map<String, String> cookies = new HashMap<>();
         cookies.put("SelfService", serviceCookie);
 
-        Connection.Response balancePageGet = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Finances/Balance.aspx")
+        Connection.Response balancePageGet = Jsoup.connect(CommonStrings.baseURL + "Finances/Balance.aspx")
                 .method(Connection.Method.GET)
                 .cookies(cookies)
                 .execute();
@@ -352,7 +353,7 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
         Element eventValidation = balanceDocument.select("input[name=__EVENTVALIDATION]").first();
         Element viewStateEncrypted = balanceDocument.select("input[name=__VIEWSTATEENCRYPTED]").first();
 
-        Document balanceDocumentPost = Jsoup.connect("https://miportal.ulsaoaxaca.edu.mx/ss/Finances/Balance.aspx")
+        Document balanceDocumentPost = Jsoup.connect(CommonStrings.baseURL + "Finances/Balance.aspx")
                 .data("ctl00$pageOptionsZone$btnSubmit", "Change")
                 .data("ctl00$pageOptionsZone$ucBalanceOptions$ucbalanceViewOptions$ViewsButtonList", "Summary")
                 .data("ctl00$pageOptionsZone$ucFinancialPeriods$PeriodsDropDown$ddlbPeriods", period)

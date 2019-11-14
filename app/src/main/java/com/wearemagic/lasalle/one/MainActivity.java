@@ -52,13 +52,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.wearemagic.lasalle.one.common.CommonStrings.baseURL;
+
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
         SubjectsFragment.SubjectsListener, GradesFragment.GradesListener, ProfileFragment.ProfileListener,
         BalanceFragment.BalanceListener, CreditsFragment.CreditsListener, ChargesFragment.ChargesListener {
 
     private static final String TAG = "LaSalleOne";
     public String packageName = "com.wearemagic.lasalle.one";
-    public String baseURL = "https://miportal.ulsaoaxaca.edu.mx/ss/";
 
     private PeriodsAsyncTaskRunner periodsTask = new PeriodsAsyncTaskRunner();
     private ArrayList<String> subjectsPeriodNames = new ArrayList<>();
