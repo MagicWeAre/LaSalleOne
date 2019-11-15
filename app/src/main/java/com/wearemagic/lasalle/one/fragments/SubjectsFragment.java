@@ -502,7 +502,8 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
                 } catch (IOException e) {
                     Log.e(TAG, "IOException on SubjectsAsyncTask");
                 } catch (IndexOutOfBoundsException e){
-                   Log.e(TAG, "IndexOutOfBoundsException on SubjectsAsyncTask");
+                    Log.e(TAG, "IndexOutOfBoundsException on SubjectsAsyncTask");
+                    returnList = null;
                 } catch (NullPointerException np) {
                     Log.d(TAG, "NullPointerException on SubjectsAsyncTask");
                     returnList = null;

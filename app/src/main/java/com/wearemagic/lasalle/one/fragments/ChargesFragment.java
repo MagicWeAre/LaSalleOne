@@ -213,6 +213,7 @@ public class ChargesFragment extends Fragment implements SwipeRefreshLayout.OnRe
                     Log.e(TAG, "IOException on chargesTask");
                 } catch (IllegalArgumentException e) {
                     Log.e(TAG, "IllegalArgumentException on ChargesAsyncTask");
+                    returnList = null;
                 } catch (NullPointerException np) {
                     Log.d(TAG, "NullPointerException on ChargesAsyncTask");
                     returnList = null;

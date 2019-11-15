@@ -213,6 +213,7 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                     Log.e(TAG, "IOException on creditsTask");
                 } catch (IllegalArgumentException e) {
                     Log.e(TAG, "IllegalArgumentException on CreditsAsyncTask");
+                    returnList = null;
                 } catch (NullPointerException np) {
                     Log.d(TAG, "NullPointerException on CreditsAsyncTask");
                     returnList = null;

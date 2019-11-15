@@ -23,12 +23,13 @@ public class SchedulePiece implements Parcelable, Serializable {
     private Date endDate = new Date();
 
     public SchedulePiece(String unparsedSchedule) {
+        unparsedSchedule = unparsedSchedule.replaceFirst("(\\d)", "|$1");
         String[] semicolonDivision = unparsedSchedule.split(";", 2);
         String[] commaDivision = semicolonDivision[1].split(",", 3);
-        String[] spaceDivision = semicolonDivision[0].split(" ", 2);
-        String[] dashDivision = spaceDivision[1].split("-");
+        String[] barDivision = semicolonDivision[0].split("\\|", 2);
+        String[] dashDivision = barDivision[1].split("-");
 
-        weekDay = spaceDivision[0].trim();
+        weekDay = barDivision[0].trim();
         campus = commaDivision[0].trim();
         building = commaDivision[1].trim().replace("Edificio", "").trim();
         room = commaDivision[2].trim().replace("Room", "").trim();
@@ -48,7 +49,9 @@ public class SchedulePiece implements Parcelable, Serializable {
                 break;
             case "Sabado": dayInt = 7;
                 break;
-            case "Domingo": ;
+            case "Domingo": dayInt = 1;
+                break;
+            default: dayInt = 0;
                 break;
         }
 

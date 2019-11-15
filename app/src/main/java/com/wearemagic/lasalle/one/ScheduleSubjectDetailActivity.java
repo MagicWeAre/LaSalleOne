@@ -221,6 +221,11 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
         spMap.putAll(childMap);
 
         spAdapter.notifyDataSetChanged();
+
+        for (int i = 0; i < expandableListView.getExpandableListAdapter().getGroupCount(); i++) {
+            //Expand group
+            expandableListView.expandGroup(i);
+        }
     }
 
     private void fillSubjectData(ArrayList<String> subjectDatum){

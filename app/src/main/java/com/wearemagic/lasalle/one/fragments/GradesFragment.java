@@ -230,6 +230,7 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     Log.e(TAG, "IOException on GradesAsyncTask");
                 } catch (IndexOutOfBoundsException e) {
                     Log.e(TAG, "IndexOutOfBoundsException on GradesAsyncTask");
+                    returnList = null;
                 } catch (NullPointerException np) {
                     Log.d(TAG, "NullPointerException on GradesAsyncTask");
                     returnList = null;

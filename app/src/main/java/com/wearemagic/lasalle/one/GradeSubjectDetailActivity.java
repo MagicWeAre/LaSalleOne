@@ -315,12 +315,20 @@ public class GradeSubjectDetailActivity extends AppCompatActivity implements Swi
 
         try {
             // Rows for each subject (Parciales Y Semestral)
-            Elements courseInfoRows = parcialGradeDocument.getElementById("resultsFinalByType3").getElementsByTag("tr");
-            Elements finalCourseInfoRows = parcialGradeDocument.getElementById("resultsFinalByType4").getElementsByTag("tr");
-            courseInfoRows.remove(0);
-            finalCourseInfoRows.remove(0);
+            Elements courseInfoTables = parcialGradeDocument.getElementsByAttributeValueStarting("id", "resultsFinalByType");
+            Elements courseInfoRows = new Elements();
 
-            courseInfoRows.addAll(finalCourseInfoRows);
+            for (Element courseType : courseInfoTables) {
+                Elements courseTypeRows = courseType.getElementsByTag("tr");
+                courseTypeRows.remove(0);
+                courseInfoRows.addAll(courseTypeRows);
+            }
+            // Elements courseInfoRows = parcialGradeDocument.getElementById("resultsFinalByType3").getElementsByTag("tr");
+            // Elements finalCourseInfoRows = parcialGradeDocument.getElementById("resultsFinalByType4").getElementsByTag("tr");
+            // courseInfoRows.remove(0);
+            // finalCourseInfoRows.remove(0);
+
+            // courseInfoRows.addAll(finalCourseInfoRows);
 
             for (Element courseInfoRow : courseInfoRows) {
                 Elements parcialData = courseInfoRow.getElementsByTag("td");

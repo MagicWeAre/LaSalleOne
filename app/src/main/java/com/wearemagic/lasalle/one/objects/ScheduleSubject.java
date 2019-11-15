@@ -156,9 +156,19 @@ public class ScheduleSubject implements Parcelable {
 
         for (SchedulePiece schedulePiece: scheduleList){
             int dayInt = schedulePiece.getDayInt();
+            ArrayList<Integer> temporalList = new ArrayList<>();
 
-            if (!returnList.contains(dayInt)) {
-                returnList.add(dayInt);
+            if (dayInt == 0) {
+                Integer[] weekDays = new Integer[] {1,2,3,4,5,6,7};
+                Collections.addAll(temporalList, weekDays);
+            } else {
+                temporalList.add(dayInt);
+            }
+
+            for (int addInt : temporalList) {
+                if (!returnList.contains(addInt)) {
+                    returnList.add(addInt);
+                }
             }
         }
         return returnList;
@@ -167,7 +177,8 @@ public class ScheduleSubject implements Parcelable {
     public ArrayList<SchedulePiece> getClassesOfDay(Integer day) {
         ArrayList<SchedulePiece> returnList = new ArrayList<>();
         for (SchedulePiece schedulePiece : scheduleList) {
-            if (schedulePiece.getDayInt() == day) {
+            Integer dayInt = schedulePiece.getDayInt();
+            if (dayInt == day || dayInt == 0) {
                 returnList.add(schedulePiece);
             }
         }
