@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="name_profile">Jean Baptiste</string>
+    <string name="surname_profile">de La Salle</string>
+    <string name="app_name">ULSA Mock</string>
+</resources>

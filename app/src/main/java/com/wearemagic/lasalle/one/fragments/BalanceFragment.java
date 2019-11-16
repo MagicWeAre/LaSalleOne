@@ -3,15 +3,6 @@ package com.wearemagic.lasalle.one.fragments;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,23 +10,25 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.wearemagic.lasalle.one.R;
 import com.wearemagic.lasalle.one.adapters.SummaryTypeAdapter;
-import com.wearemagic.lasalle.one.common.CommonStrings;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.SummaryType;
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import com.wearemagic.lasalle.one.providers.StudentData;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = "LaSalleOne";
@@ -210,7 +203,7 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
                 try {
                     String periodArgument = periodValueList.get(spinnerPosition);
-                    returnList = getSummary(serviceCookie, periodArgument);
+                    returnList = StudentData.getSummary(serviceCookie, periodArgument);
                 } catch (IOException e) {
                     Log.e(TAG, "IOException on BalanceAsyncTask");
                 } catch (NullPointerException np) {
@@ -316,90 +309,6 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
             summaryRecyclerView.setVisibility(View.VISIBLE);
         }
-    }
-
-    private ArrayList<ArrayList> getSummary(String serviceCookie, String period) throws IOException, LoginTimeoutException {
-        ArrayList<ArrayList> returnList = new ArrayList<>();
-        Element summaryTable = getBalanceDocument(serviceCookie, period).getElementById("ctl00_mainContentZone_ucAccountBalance_gvSummaryTypeTotals");
-        ArrayList<SummaryType> summaryTypeList = getSummaryList(summaryTable, period);
-        ArrayList<String> totalsList = getTotalSL(summaryTable);
-
-        returnList.add(summaryTypeList);
-        returnList.add(totalsList);
-
-        return returnList;
-
-        //"Total: " + totalsList.get(0);
-        //"From other periods: " + totalsList.get(1);
-        //"Balance: " + totalsList.get(2);
-    }
-
-    private Document getBalanceDocument(String serviceCookie, String period) throws IOException, LoginTimeoutException {
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("SelfService", serviceCookie);
-
-        Connection.Response balancePageGet = Jsoup.connect(CommonStrings.baseURL + "Finances/Balance.aspx")
-                .method(Connection.Method.GET)
-                .cookies(cookies)
-                .execute();
-
-        Document balanceDocument = balancePageGet.parse();
-
-        if(balanceDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
-            throw new LoginTimeoutException();
-        }
-
-        Element viewState = balanceDocument.select("input[name=__VIEWSTATE]").first();
-        Element eventValidation = balanceDocument.select("input[name=__EVENTVALIDATION]").first();
-        Element viewStateEncrypted = balanceDocument.select("input[name=__VIEWSTATEENCRYPTED]").first();
-
-        Document balanceDocumentPost = Jsoup.connect(CommonStrings.baseURL + "Finances/Balance.aspx")
-                .data("ctl00$pageOptionsZone$btnSubmit", "Change")
-                .data("ctl00$pageOptionsZone$ucBalanceOptions$ucbalanceViewOptions$ViewsButtonList", "Summary")
-                .data("ctl00$pageOptionsZone$ucFinancialPeriods$PeriodsDropDown$ddlbPeriods", period)
-                .data("__VIEWSTATE", viewState.attr("value"))
-                .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                .data("__VIEWSTATEENCRYPTED", viewStateEncrypted.attr("value"))
-                .cookies(cookies)
-                .post();
-
-        return balanceDocumentPost;
-    }
-
-    public static ArrayList<SummaryType> getSummaryList(Element table, String period) {
-        ArrayList<SummaryType> summaryList = new ArrayList<>();
-        Elements tableRows = table.getElementsByTag("tr");
-        for (Element row : tableRows) {
-            if (!row.hasAttr("class")) {
-                SummaryType summaryType = new SummaryType(row.getElementsByAttribute("align").first().text(), row.getElementsByTag("span").first().text(), period);
-                summaryList.add(summaryType);
-            }
-        }
-        return summaryList;
-    }
-
-    public static ArrayList<String> getTotalSL(Element table) {
-        ArrayList<String> summaryList = new ArrayList<>();
-        Elements labels = table.getElementsByAttributeValue("class", "label");
-
-        summaryList.add(assignSign(labels.get(3).text(), false));
-        summaryList.add(assignSign(labels.get(4).text(), false));
-        summaryList.add(assignSign(labels.get(5).text(), true));
-
-        return summaryList;
-    }
-
-    public static String assignSign(String amount, boolean onlyNegative) {
-        String a;
-        if (amount.startsWith("(")) {
-            a = amount.replace("(", "").replace(")", "");
-            if (!onlyNegative){
-                a = "+ " + a;
-            }
-        } else {
-            a = "- " + amount;
-        }
-        return a;
     }
 }
 //ctl00$pageOptionsZone$ucBalanceOptions$ucbalanceViewOptions$ViewsButtonList = Summary / SummaryTypeDetail / ChargeCreditDetail

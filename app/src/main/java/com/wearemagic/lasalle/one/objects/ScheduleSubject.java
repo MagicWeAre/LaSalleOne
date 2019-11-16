@@ -10,6 +10,7 @@ import org.apache.commons.text.WordUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -178,7 +179,9 @@ public class ScheduleSubject implements Parcelable {
         ArrayList<SchedulePiece> returnList = new ArrayList<>();
         for (SchedulePiece schedulePiece : scheduleList) {
             Integer dayInt = schedulePiece.getDayInt();
-            if (dayInt == day || dayInt == 0) {
+            int[] weekDays = new int[] {1, 2, 3, 4, 5};
+            boolean dayOfWeek = Arrays.asList(weekDays).contains(day);
+            if (dayInt == day || (dayInt == 0 && dayOfWeek)) {
                 returnList.add(schedulePiece);
             }
         }

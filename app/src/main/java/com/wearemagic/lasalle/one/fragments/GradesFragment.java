@@ -4,40 +4,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.wearemagic.lasalle.one.GradeSubjectDetailActivity;
 import com.wearemagic.lasalle.one.R;
 import com.wearemagic.lasalle.one.adapters.GradeSubjectAdapter;
-import com.wearemagic.lasalle.one.common.CommonStrings;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.GradeSubject;
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import com.wearemagic.lasalle.one.providers.StudentData;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, GradeSubjectAdapter.OnGSListener {
     private static final String TAG = "LaSalleOne";
@@ -225,7 +218,7 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
                 try {
                     String periodArgument = periodValueList.get(spinnerPosition);
-                    returnList = getGradeSubjects(serviceCookie, periodArgument);
+                    returnList = StudentData.getGradeSubjects(serviceCookie, periodArgument);
                 } catch (IOException e) {
                     Log.e(TAG, "IOException on GradesAsyncTask");
                 } catch (IndexOutOfBoundsException e) {
@@ -314,68 +307,5 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private void setEmptyMessage() {
         emptyMessage.setText(getString(R.string.error_no_data));
         emptyMessage.setVisibility(View.VISIBLE);
-    }
-
-    private ArrayList<GradeSubject> getGradeSubjects(String serviceCookie, String period) throws IOException, LoginTimeoutException {
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("SelfService", serviceCookie);
-
-        Connection.Response balancePageGet = Jsoup.connect(CommonStrings.baseURL + "Records/GradeReport.aspx")
-                .method(Connection.Method.GET)
-                .cookies(cookies)
-                .execute();
-
-        Document gradesDocument = balancePageGet.parse();
-
-        if(gradesDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
-            throw new LoginTimeoutException();
-        }
-
-        Element viewState = gradesDocument.select("input[name=__VIEWSTATE]").first();
-        Element eventValidation = gradesDocument.select("input[name=__EVENTVALIDATION]").first();
-
-        Document gradesDocumentPost = Jsoup.connect(CommonStrings.baseURL + "Records/GradeReport.aspx")
-
-                .data("ctl00$pageOptionsZone$GradeReportOptions$SubmitButton", "Submit")
-                .data("ctl00$pageOptionsZone$GradeReportOptions$PeriodDropDown", period)
-                .data("__VIEWSTATE", viewState.attr("value"))
-                .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                .cookies(cookies)
-                .post();
-
-        Element gradesTable = gradesDocumentPost.getElementsByAttributeValue("summary", "A list of courses on the schedule and the grade for each course.").first();
-        Elements tableRows = gradesTable.getElementsByAttribute("id");
-
-        Elements linkDivs = gradesDocumentPost.getElementsByAttributeValue("class", "newMenuNoImg");
-        ArrayList<GradeSubject> CoursesGradesList = new ArrayList<>();
-
-        int rowNumber = 0;
-
-        for (Element tableRow: tableRows) {
-            Elements previewData = tableRow.getElementsByTag("td");
-
-            //Assign info from subject row
-            String courseInfo = previewData.get(1).text();
-            String courseName = previewData.get(2).getElementsByTag("a").first().text();
-            String numericCode = previewData.get(2).getElementsByTag("a").first().attr("onclick")
-                    .split(" ", 3)[1].replace(");","");
-            String sectionInfo = previewData.get(3).text();
-            String creditsInfo = previewData.get(4).text();
-            String qualityPoints = previewData.get(5).text();
-            //Index 6 is without parenthesis
-            String projectedGrade = previewData.get(6).text();
-            String finalGrade = previewData.get(8).text();
-
-            //Assign GradeSubject
-            GradeSubject gradeSubject = new GradeSubject(numericCode, period, courseName, courseInfo, sectionInfo, creditsInfo);
-            gradeSubject.setQualityPoints(qualityPoints);
-            gradeSubject.setProjectedGrade(projectedGrade);
-            gradeSubject.setFinalGrade(finalGrade);
-
-            CoursesGradesList.add(gradeSubject);
-            rowNumber ++;
-        }
-
-        return CoursesGradesList;
     }
 }

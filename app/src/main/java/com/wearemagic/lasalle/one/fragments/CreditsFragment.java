@@ -4,15 +4,6 @@ package com.wearemagic.lasalle.one.fragments;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,23 +12,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.wearemagic.lasalle.one.R;
 import com.wearemagic.lasalle.one.adapters.ChargeCreditAdapter;
-import com.wearemagic.lasalle.one.common.CommonStrings;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.ChargeCredit;
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import com.wearemagic.lasalle.one.providers.StudentData;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
@@ -208,7 +201,7 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                 String serviceCookie = params[0];
                 String periodArgument = periodValueList.get(spinnerPosition);
 
-                try {returnList = getCredits(serviceCookie, periodArgument);}
+                try {returnList = StudentData.getChargesCredits(serviceCookie, periodArgument, true);}
                 catch (IOException e) {
                     Log.e(TAG, "IOException on creditsTask");
                 } catch (IllegalArgumentException e) {
@@ -286,83 +279,5 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private void setEmptyMessage() {
         emptyMessage.setText(getString(R.string.error_no_data));
         emptyMessage.setVisibility(View.VISIBLE);
-    }
-
-
-    private List getCredits(String serviceCookie, String periodLocal) throws IOException, IllegalArgumentException, LoginTimeoutException {
-        // [Credits] [TotalCredits]
-        List returnList = new ArrayList();
-
-        // Credits Table
-        Element creditsTable = getBalanceDocument(serviceCookie, periodLocal).getElementById("ctl00_mainContentZone_ucAccountBalance_CreditDetailsUserControl_gvBalanceDetails");
-        String totalCredits = getTotalCC(creditsTable);
-        List<ChargeCredit> creditsList = getChargesCreditsList(creditsTable, periodLocal);
-
-        returnList.add(creditsList);
-        returnList.add(totalCredits);
-
-        return returnList;
-    }
-
-    private Document getBalanceDocument(String serviceCookie, String periodLocal) throws IOException, IllegalArgumentException, LoginTimeoutException {
-        Map<String, String> cookies = new HashMap<String, String>();
-        cookies.put("SelfService", serviceCookie);
-
-        Connection.Response balancePageGet = Jsoup.connect(CommonStrings.baseURL + "Finances/Balance.aspx")
-                .method(Connection.Method.GET)
-                .cookies(cookies)
-                .execute();
-
-        Document balanceDocument = balancePageGet.parse();
-
-        if(balanceDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
-            throw new LoginTimeoutException();
-        }
-
-        Element viewState = balanceDocument.select("input[name=__VIEWSTATE]").first();
-        Element eventValidation = balanceDocument.select("input[name=__EVENTVALIDATION]").first();
-        Element viewStateEncrypted = balanceDocument.select("input[name=__VIEWSTATEENCRYPTED]").first();
-
-        Document balanceDocumentPost = Jsoup.connect(CommonStrings.baseURL + "Finances/Balance.aspx")
-
-                .data("ctl00$pageOptionsZone$btnSubmit", "Change")
-                .data("ctl00$pageOptionsZone$ucBalanceOptions$ucbalanceViewOptions$ViewsButtonList", "ChargeCreditDetail")
-                .data("ctl00$pageOptionsZone$ucFinancialPeriods$PeriodsDropDown$ddlbPeriods", periodLocal)
-                .data("__VIEWSTATE", viewState.attr("value"))
-                .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                .data("__VIEWSTATEENCRYPTED", viewStateEncrypted.attr("value"))
-                .cookies(cookies)
-                .post();
-        return balanceDocumentPost;
-    }
-
-    public static List getChargesCreditsList(Element table, String periodLocal) {
-        List<ChargeCredit> movementsList = new ArrayList();
-        Elements tableRows = table.getElementsByTag("tr");
-        tableRows.remove(tableRows.size() -1);
-
-        for (Element row : tableRows) {
-            if (!row.hasAttr("class")) {
-                Elements cells = row.getElementsByTag("td");
-                ChargeCredit chargeCredit = new ChargeCredit(row.getElementsByTag("span").first().text(),
-                        cells.get(3).text(), cells.get(0).text(), periodLocal, cells.get(2).text());
-                movementsList.add(chargeCredit);
-            }
-        }
-
-        return movementsList;
-    }
-
-    public static String getTotalCC(Element table) {
-        Elements chargesTableRows = table.getElementsByTag("tr");
-        Element finalRowCharges = chargesTableRows.last();
-        String total =  finalRowCharges.getElementsByTag("span").first().text();
-
-        if(total.equals("No charges exist for the selected period.") || total.equals("No credits exist for the selected period.")){
-            total = "$0.00";
-        } else {
-            total = total.split(":")[1].trim();
-        }
-        return total;
     }
 }

@@ -79,4 +79,5 @@
     <string name="error_parsing_data">There was an error fetching your data.</string>
     <string name="welcome_message_m">Welcome</string>
     <string name="welcome_message_w">Welcome</string>
+    <string name="app_name">La Salle Oaxaca</string>
 </resources>

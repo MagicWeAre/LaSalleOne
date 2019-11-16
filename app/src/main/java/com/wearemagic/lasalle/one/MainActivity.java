@@ -40,19 +40,12 @@ import com.wearemagic.lasalle.one.fragments.HomeFragment;
 import com.wearemagic.lasalle.one.fragments.ProfileFragment;
 import com.wearemagic.lasalle.one.fragments.SubjectsFragment;
 import com.wearemagic.lasalle.one.objects.ScheduleSubject;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import com.wearemagic.lasalle.one.providers.Periods;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static com.wearemagic.lasalle.one.common.CommonStrings.baseURL;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
         SubjectsFragment.SubjectsListener, GradesFragment.GradesListener, ProfileFragment.ProfileListener,
@@ -564,77 +557,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    // Primary method to retrieve period information, reworked to reuse code
-    private ArrayList<ArrayList<ArrayList<String>>> getPeriods(String sessionCookie) throws IOException, LoginTimeoutException {
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("SelfService", sessionCookie);
-
-        ArrayList<ArrayList<ArrayList<String>>> returnList = new ArrayList<>();
-
-        // Subjects Periods
-        ArrayList<ArrayList<String>> subjectsPeriodList = getPeriod("Records/ClassSchedule.aspx",
-                "ctl00_pageOptionsZone_ddlbPeriods",
-                cookies, true, true);
-
-        // Grades Periods
-        ArrayList<ArrayList<String>> gradesPeriodList = getPeriod("Records/GradeReport.aspx",
-                "ctl00_pageOptionsZone_GradeReportOptions_PeriodDropDown",
-                cookies, false, false);
-
-        // Balance Periods
-        ArrayList<ArrayList<String>> balancePeriodList = getPeriod("Finances/Balance.aspx",
-                "ctl00_pageOptionsZone_ucFinancialPeriods_PeriodsDropDown_ddlbPeriods",
-                cookies, false, false);
-
-        returnList.add(subjectsPeriodList);
-        returnList.add(gradesPeriodList);
-        returnList.add(balancePeriodList);
-
-        return returnList;
-    }
-
-    private ArrayList<ArrayList<String>> getPeriod(String periodURL, String parsedElementID,
-        Map<String, String> cookieMap, boolean checkLTException, boolean omitRepetitions) throws IOException, LoginTimeoutException {
-
-        // We reuse the base string
-        // exampleURL: "Records/ClassSchedule.aspx"
-        Document periodDocument = Jsoup.connect(baseURL.concat(periodURL))
-                .cookies(cookieMap)
-                .get();
-
-        // Only check for LTException once, obviously
-        if(checkLTException && periodDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
-            throw new LoginTimeoutException();
-        }
-
-        ArrayList<String> periodNames = new ArrayList<>();
-        ArrayList<String> periodValues = new ArrayList<>();
-
-        if(periodDocument.getElementsByClass("msgWarning").isEmpty()){
-            Elements periods = periodDocument.getElementById(parsedElementID).getElementsByTag("option");
-
-            for (Element period : periods) {
-                boolean periodNecessary = true;
-                if (omitRepetitions) {
-                    periodNecessary = period.attr("value").endsWith("|");
-                }
-
-                if (periodNecessary) {
-                    periodNames.add(period.text());
-                    periodValues.add(period.attr("value"));
-                }
-            }
-        } else {
-            periodValues = null;
-        }
-
-        ArrayList<ArrayList<String>> periodList = new ArrayList<>();
-        periodList.add(periodNames);
-        periodList.add(periodValues);
-
-        return periodList;
-    }
-
     private void updatePeriods(ArrayList<ArrayList<ArrayList<String>>> periodsArrayList) {
         ArrayList<ArrayList<String>> subjectsPeriodList = periodsArrayList.get(0);
         ArrayList<ArrayList<String>> gradesPeriodList = periodsArrayList.get(1);
@@ -705,7 +627,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             ArrayList<ArrayList<ArrayList<String>>> periodsList = new ArrayList<>();
 
             try {
-                periodsList = getPeriods(sessionCookie);
+                periodsList = Periods.getPeriods(sessionCookie);
             } catch (IOException e) {
                 // Connectivity issues
                 Log.e(TAG, "IOException on PeriodAsyncTask");

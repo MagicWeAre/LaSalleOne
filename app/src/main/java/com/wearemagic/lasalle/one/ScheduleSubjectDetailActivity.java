@@ -18,22 +18,18 @@ import com.google.android.material.snackbar.Snackbar;
 import com.wearemagic.lasalle.one.adapters.ExpandableScheduleAdapter;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.SchedulePiece;
+import com.wearemagic.lasalle.one.providers.StudentData;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
 
-import static com.wearemagic.lasalle.one.common.CommonStrings.baseURL;
 
 public class ScheduleSubjectDetailActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
     private static final String TAG = "LaSalleOne";
@@ -280,16 +276,16 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
                 if (isCancelled()) break;
 
                 try {
-                    Document scheduleDocument = getScheduleDocument(serviceCookie, periodCode, numericCode);
+                    Document scheduleDocument = StudentData.getScheduleDocument(serviceCookie, periodCode, numericCode);
 
-                    ArrayList<String> additionalInfo = getAdditionalInfo(scheduleDocument);
+                    ArrayList<String> additionalInfo = StudentData.getScheduleAdditionalInfo(scheduleDocument);
                     //AdditionalInfo
                     String subject = additionalInfo.get(0);
                     String credits = additionalInfo.get(1);
                     String instructor = additionalInfo.get(2);
                     String dateRange = additionalInfo.get(3);
 
-                    HashMap<String, ArrayList<SchedulePiece>> schedulePieces = getSchedulePieces(scheduleDocument);
+                    HashMap<String, ArrayList<SchedulePiece>> schedulePieces = StudentData.getSchedulePieces(scheduleDocument);
 
                     returnList.add(subject);
                     returnList.add(credits);
@@ -395,79 +391,5 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
 
             swipeRefreshLayout.setRefreshing(false);
         }
-    }
-
-    private Document getScheduleDocument(String serviceCookie, String periodCode, String numericCode) throws IOException, LoginTimeoutException {
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("SelfService", serviceCookie);
-        String appendedURL =  "Records/ClassSchedule.aspx";
-
-        Connection.Response schedulePageGet = Jsoup.connect(baseURL + appendedURL)
-                .method(Connection.Method.GET)
-                .cookies(cookies)
-                .execute();
-
-        Document scheduleDocument = schedulePageGet.parse();
-
-        if(scheduleDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
-            throw new LoginTimeoutException();
-        }
-
-        Element viewState = scheduleDocument.select("input[name=__VIEWSTATE]").first();
-        Element eventValidation = scheduleDocument.select("input[name=__EVENTVALIDATION]").first();
-
-        Document scheduleDocumentPost = Jsoup.connect(baseURL + appendedURL)
-
-                .data("ctl00$pageOptionsZone$ddlbPeriods", periodCode)
-                .data("__EVENTARGUMENT", numericCode)
-                .data("__EVENTTARGET", "ShowDetail")
-                .data("__VIEWSTATE", viewState.attr("value"))
-                .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                .cookies(cookies)
-                .post();
-
-        return scheduleDocumentPost;
-    }
-
-    private HashMap<String, ArrayList<SchedulePiece>> getSchedulePieces(Document scheduleDocument){
-        HashMap<String, ArrayList<SchedulePiece>> returnHashMap = new HashMap<>();
-        ArrayList<SchedulePiece> schedulePieces = new ArrayList<>();
-        String schedule = scheduleDocument.getElementById("ctl00_mainContentZone_ucSectionDetail_lblSchedule").parent().parent().getElementsByTag("td").get(1).html();
-
-        String[] pieces = schedule.split("<br>");
-
-        for (String piece: pieces) {
-            if(!piece.isEmpty()){
-                SchedulePiece newSchedulePiece = new SchedulePiece(piece.replace("&nbsp;", "").trim());
-                schedulePieces.add(newSchedulePiece);
-            }
-        }
-
-        for (SchedulePiece schedulePiece: schedulePieces){
-            if(!returnHashMap.containsKey(schedulePiece.getWeekDay())){
-                ArrayList<SchedulePiece> daySchedulePieceList = new ArrayList<>();
-                returnHashMap.put(schedulePiece.getWeekDay(), daySchedulePieceList);
-            }
-
-            returnHashMap.get(schedulePiece.getWeekDay()).add(schedulePiece);
-        }
-
-        return returnHashMap;
-    }
-
-    private ArrayList<String> getAdditionalInfo(Document scheduleDocument) throws IOException {
-        ArrayList<String> returnList = new ArrayList<>();
-
-        Element subjectName = scheduleDocument.getElementsByClass("leveloneheader").first();
-        String credits = subjectName.parent().ownText();
-        String instructor = scheduleDocument.getElementById("ctl00_mainContentZone_ucSectionDetail_lblInstructors").parent().parent().getElementsByTag("td").get(1).ownText();
-        String dateRange = scheduleDocument.getElementById("ctl00_mainContentZone_ucSectionDetail_lblDuration").parent().parent().getElementsByTag("td").get(1).ownText();
-
-        returnList.add(subjectName.ownText());
-        returnList.add(credits.replace("|", "").trim());
-        returnList.add(instructor);
-        returnList.add(dateRange);
-
-        return returnList;
     }
 }

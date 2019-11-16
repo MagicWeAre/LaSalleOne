@@ -9,15 +9,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
-import androidx.constraintlayout.widget.ConstraintLayout;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.tabs.TabLayout;
-import androidx.fragment.app.Fragment;
-import androidx.viewpager.widget.ViewPager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,30 +20,23 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
 import com.wearemagic.lasalle.one.LoginActivity;
 import com.wearemagic.lasalle.one.R;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
+import com.wearemagic.lasalle.one.providers.StudentData;
 
-import org.apache.commons.text.WordUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
-
-import static com.wearemagic.lasalle.one.common.CommonStrings.baseURL;
 
 public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = "LaSalleOne";
@@ -300,7 +284,7 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
             if(moodleCookie != null && !moodleCookie.isEmpty()){
                 try {
-                    savePicture(moodleCookie, salleId);
+                    StudentData.savePicture(moodleCookie, salleId, getActivity());
                 } catch (IOException e){
                     e.printStackTrace();
                 } catch (NullPointerException np) {
@@ -346,7 +330,7 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
             String sessionCookie = params[0];
             ArrayList<String> profileArrayLocal = new ArrayList<>();
 
-            try { profileArrayLocal = getProfile(sessionCookie);
+            try { profileArrayLocal = StudentData.getProfile(sessionCookie);
             } catch (IOException e) {
                 Log.e(TAG, "IOException on ProfileAsyncTask");
             } catch (LoginTimeoutException lt) {
@@ -505,128 +489,4 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
         */
         profileLayout.setVisibility(View.VISIBLE);
     }
-
-    private void savePicture(String moodleCookie, String userName) throws IOException {
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("MoodleSession", moodleCookie);
-
-        Document profilePicDocument = Jsoup.connect("http://micurso.ulsaoaxaca.edu.mx/user/profile.php")
-                .cookies(cookies)
-                .get();
-
-        Element profilePicture = profilePicDocument.getElementsByAttributeValueStarting("class", "userpicture").first();
-        String pictureLink = profilePicture.attr("src");
-        String linkTemplate = pictureLink.replace("f1", "f3");
-
-        HttpURLConnection imageConnection = (HttpURLConnection) new URL(linkTemplate).openConnection();
-        imageConnection.setRequestMethod("GET");
-        imageConnection.addRequestProperty("Cookie","MoodleSession=" + moodleCookie);
-
-        InputStream imageInput = imageConnection.getInputStream();
-        Bitmap profileBitmap = BitmapFactory.decodeStream(imageInput);
-        String filename = userName + ".jpg";
-
-        File file = new File(getActivity().getFilesDir(), filename);
-
-        try {
-            OutputStream stream = new FileOutputStream(file);
-
-            profileBitmap.compress(Bitmap.CompressFormat.JPEG,100, stream);
-            stream.flush();
-            stream.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private ArrayList<String> getProfile(String sessionCookie) throws IOException, LoginTimeoutException {
-        String idBase = "ctl00_mainContentZone_LoginInformationControl_LoginInfoFormView_";
-        String addressBase = "ctl00_mainContentZone_ucEditAddress_";
-
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("SelfService", sessionCookie);
-
-        Document perfilDocument = Jsoup.connect(baseURL + "Account/LoginInformation.aspx")
-                .cookies(cookies)
-                .get();
-
-        if(perfilDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
-            throw new LoginTimeoutException();
-        }
-
-        Element userName = perfilDocument.getElementById(idBase + "UserNameField_UserNameFieldValueLabel");
-        Element firstName = perfilDocument.getElementById(idBase + "FirstNameField_FirstNameFieldValueLabel");
-        Element middleName = perfilDocument.getElementById(idBase + "MiddleNameField_MiddleNameFieldValueLabel");
-        Element lastName = perfilDocument.getElementById(idBase + "LastNameField_LastNameFieldValueLabel");
-        Element lastNamePrefix = perfilDocument.getElementById(idBase + "LastNamePrefixField_LastNamePrefixFieldValueLabel");
-        Element email = perfilDocument.getElementById(idBase + "EmailField_EmailFieldValueLabel");
-
-        Document phoneDocument = Jsoup.connect(baseURL + "Account/PhoneNumbers.aspx")
-                .cookies(cookies)
-                .get();
-
-        Element mainPhoneTable = phoneDocument.getElementById("primaryphone");
-        Element otherPhoneTable = phoneDocument.getElementById("otherphone");
-
-        Map<String, String> phones = new HashMap<>();
-
-        if (mainPhoneTable != null) {
-            phones.put(mainPhoneTable.getElementsByTag("td").get(0).text(), mainPhoneTable.getElementsByTag("td").get(2).text()); }
-        if (otherPhoneTable != null) {
-            phones.put(otherPhoneTable.getElementsByTag("td").get(0).text(), otherPhoneTable.getElementsByTag("td").get(2).text()); }
-
-        Document curpDocument = Jsoup.connect(baseURL + "Records/Transcripts.aspx")
-                .cookies(cookies)
-                .get();
-
-        Element curpElement = curpDocument.getElementsByAttribute("colspan").first().nextElementSibling();
-        String curp = curpElement.text().replace("ID:", "").trim();
-
-        /*Document addressDocument = Jsoup.connect(baseURL + "Account/ChangeAddress.aspx")
-                .cookies(cookies)
-                .get();
-
-        String addressLink = addressDocument.getElementById("ctl00_mainContentZone_ucChangeAddress_EditAddress_Hyperlink").attr("abs:href");
-
-        Document editAddressDocument = Jsoup.connect(addressLink)
-                .cookies(cookies)
-                .get();
-
-        String houseNumber = editAddressDocument.getElementById(addressBase + "AddressHouseNumberTextBox").attr("value");
-        String addressLineOne = editAddressDocument.getElementById(addressBase + "AddressAddressTextBox").attr("value");
-        String addressLineTwo = editAddressDocument.getElementById(addressBase + "AddressAddressTextBox2").attr("value");
-        String addressLineThree = editAddressDocument.getElementById(addressBase + "AddressAddressTextBox3").attr("value");
-        String addressLineFour = editAddressDocument.getElementById(addressBase + "AddressAddressTextBox4").attr("value");
-        String city = editAddressDocument.getElementById(addressBase + "AddressCityTextBox").attr("value");
-        String postalCode = editAddressDocument.getElementById(addressBase + "AddressZipCodeTextBox").attr("value");
-
-        Element stateDropdown = editAddressDocument.getElementById("ctl00_mainContentZone_ucEditAddress_AddressStateDropDown");
-        String state = stateDropdown.getElementsByAttribute("selected").first().text();
-
-        Element countryDropdown = editAddressDocument.getElementById("ctl00_mainContentZone_ucEditAddress_AddressCountryDropDown");
-        String country = countryDropdown.getElementsByAttribute("selected").first().text();*/
-
-
-        Element[] elementArray = {userName, firstName, middleName, lastName, lastNamePrefix, email};
-        //String[] addressArray = {houseNumber, addressLineOne, addressLineTwo, addressLineThree, addressLineFour, city, postalCode, state, country};
-
-        //String[] returnArray = new String[elementArray.length + addressArray.length + 2];
-        String[] returnArray = new String[elementArray.length + 2];
-
-        for (int i = 0; i < elementArray.length; i++) {
-            returnArray[i] = WordUtils.capitalizeFully(elementArray[i].text()); }
-
-        returnArray[elementArray.length] = ((phones.get("Celular") == null) ? "" : phones.get("Celular"));
-        returnArray[elementArray.length + 1 ] = ((phones.get("Casa") == null) ? "" : phones.get("Casa"));
-
-        //System.arraycopy(addressArray, 0, returnArray, 8, addressArray.length);
-
-        ArrayList<String> profileArrayList = new ArrayList<>();
-        profileArrayList.addAll(Arrays.asList(returnArray));
-        profileArrayList.add(curp);
-
-        return profileArrayList;
-    }
-
 }

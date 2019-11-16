@@ -4,32 +4,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.wearemagic.lasalle.one.R;
 import com.wearemagic.lasalle.one.ScheduleSubjectDetailActivity;
 import com.wearemagic.lasalle.one.adapters.ScheduleSubjectAdapter;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.SchedulePiece;
 import com.wearemagic.lasalle.one.objects.ScheduleSubject;
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import com.wearemagic.lasalle.one.providers.StudentData;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -39,12 +35,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-
-import static com.wearemagic.lasalle.one.common.CommonStrings.baseURL;
 
 public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, ScheduleSubjectAdapter.OnGSListener{
     private static final String TAG = "LaSalleOne";
@@ -214,126 +206,6 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
         spinnerPosition = spinnerPos;
     }
 
-    public ArrayList<ScheduleSubject> getSubjects(String serviceCookie, String period, boolean showText) throws IOException, LoginTimeoutException {
-        ArrayList<ScheduleSubject> returnList = new ArrayList<>();
-        String appendedURL = "Records/ClassSchedule.aspx";
-
-        Map<String, String> cookies = new HashMap<String, String>();
-        cookies.put("SelfService", serviceCookie);
-
-        Connection.Response subjectsPageGet = Jsoup.connect(baseURL + appendedURL)
-                .method(Connection.Method.GET)
-                .cookies(cookies)
-                .execute();
-
-        Document subjectsDocument = subjectsPageGet.parse();
-
-        if(subjectsDocument.getElementById("ctl00_mainContent_lvLoginUser_ucLoginUser") != null){
-            throw new LoginTimeoutException();
-        }
-
-        Element viewState = subjectsDocument.select("input[name=__VIEWSTATE]").first();
-        Element eventValidation = subjectsDocument.select("input[name=__EVENTVALIDATION]").first();
-
-        if (firstGet) {
-            Jsoup.connect(baseURL + appendedURL)
-                    .data("ctl00$pageOptionsZone$ddlbPeriods", period)
-                    .data("__EVENTTARGET", "ShowText")
-                    .data("__VIEWSTATE", viewState.attr("value"))
-                    .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                    .cookies(cookies)
-                    .post();
-            firstGet = false;
-        }
-        Document subjectsDocumentPost = Jsoup.connect(baseURL + appendedURL)
-                .data("ctl00$pageOptionsZone$ddlbPeriods", period)
-                .data("__EVENTTARGET", "ctl00$pageOptionsZone$ddlbPeriods")
-                .data("__VIEWSTATE", viewState.attr("value"))
-                .data("__EVENTVALIDATION", eventValidation.attr("value"))
-                .cookies(cookies)
-                .post();
-
-        Element subjectsTable = subjectsDocumentPost.getElementsByAttributeValue("style", "table-layout:fixed").first();
-        Elements subjectNames = subjectsTable.getElementsByAttribute("title");
-        Elements durations = subjectsTable.getElementsMatchingOwnText("Duration");
-        Elements credits = subjectsTable.getElementsMatchingOwnText("Credits");
-        Elements instructors = subjectsTable.getElementsMatchingOwnText("Instructors");
-        Elements preScheduleTables = subjectsTable.getElementsByAttributeValue("align", "left");
-
-        ArrayList<String> scheduleNameList = new ArrayList<>();
-        ArrayList<String> scheduleNumericCodeList = new ArrayList<>();
-        ArrayList<String> scheduleDurationList = new ArrayList<>();
-        ArrayList<String> scheduleCreditList = new ArrayList<>();
-        ArrayList<String> scheduleInstructorList = new ArrayList<>();
-        ArrayList<ArrayList<SchedulePiece>> schedulePieceList = new ArrayList<>();
-
-        for (Element subject : subjectNames) {
-            if (!subject.text().isEmpty()) {
-                scheduleNameList.add(subject.text());
-                scheduleNumericCodeList.add(subject.attr("href").split("'")[3]);
-            }
-        }
-
-        for (Element duration : durations) {
-            String durationStr = duration.parent().ownText();
-            if (!durationStr.isEmpty()) {
-                scheduleDurationList.add(durationStr);
-            }
-        }
-
-        for (Element credit : credits) {
-            String creditStr = credit.parent().ownText();
-            if (!creditStr.isEmpty()) {
-                scheduleCreditList.add(creditStr);
-            }
-        }
-
-        for (Element instructor : instructors) {
-            String instructorStr = instructor.parent().ownText();
-                scheduleInstructorList.add(instructorStr);
-        }
-
-        for (Element scheduleTable : preScheduleTables) {
-            ArrayList<SchedulePiece> schedulePieces = new ArrayList<>();
-
-            String scheduleStr = scheduleTable.nextElementSibling().html();
-
-            if (!scheduleStr.isEmpty()) {
-
-                String[] pieces = scheduleStr.split("<br>");
-
-                for (String piece : pieces) {
-                    if (!piece.isEmpty()) {
-                        SchedulePiece newSchedulePiece = new SchedulePiece(piece.replace("&nbsp;", "").trim());
-                        schedulePieces.add(newSchedulePiece);
-                    }
-                }
-            }
-
-            schedulePieceList.add(schedulePieces);
-        }
-
-        int rowNumber = 0;
-        for (String subjectName : scheduleNameList) {
-            String subjectNumericCode = scheduleNumericCodeList.get(rowNumber);
-            String subjectDuration = scheduleDurationList.get(rowNumber);
-            String subjectCredit = scheduleCreditList.get(rowNumber);
-            String subjectInstructor = scheduleInstructorList.get(rowNumber);
-            ArrayList<SchedulePiece> subjectSchedule = schedulePieceList.get(rowNumber);
-
-            ScheduleSubject scheduleSubject = new ScheduleSubject(subjectName, subjectDuration,
-                subjectCredit, subjectInstructor, subjectNumericCode, period);
-
-            scheduleSubject.setScheduleList(subjectSchedule);
-
-            returnList.add(scheduleSubject);
-
-            rowNumber++;
-        }
-
-        return returnList;
-    }
-
     private void setEmptyMessage() {
         emptyMessage.setText(getString(R.string.error_no_data));
         emptyMessage.setVisibility(View.VISIBLE);
@@ -498,11 +370,13 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
 
                 try {
                     String periodArgument = periodValueList.get(spinnerPosition);
-                    returnList = getSubjects(serviceCookie, periodArgument, firstGet);
+                    returnList = StudentData.getSubjects(serviceCookie, periodArgument, firstGet);
+                    firstGet = false;
                 } catch (IOException e) {
                     Log.e(TAG, "IOException on SubjectsAsyncTask");
                 } catch (IndexOutOfBoundsException e){
                     Log.e(TAG, "IndexOutOfBoundsException on SubjectsAsyncTask");
+                    Log.e(TAG, e.getMessage());
                     returnList = null;
                 } catch (NullPointerException np) {
                     Log.d(TAG, "NullPointerException on SubjectsAsyncTask");

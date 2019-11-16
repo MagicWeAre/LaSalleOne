@@ -1,6 +1,5 @@
 <resources>
-
-    <string name="app_name" translatable="false">La Salle</string>
+    <string name="app_name">ULSA Oaxaca</string>
     <string name="main_activity_title">Nuestro Portal</string>
     <string name="schedule_activity_title">Horario</string>
     <string name="ad_content_description">Próximamente disponible el Asistente de Tarjetas.</string>
@@ -123,9 +122,9 @@
     <string name="email_profile">Email</string>
     <string name="mobile_profile">Celular</string>
     <string name="phone_profile">Casa</string>
-    <string name="email_example_profile" translatable="false">suazo@example.com</string>
-    <string name="mobile_example_profile" translatable="false">9511929317</string>
-    <string name="phone_example_profile" translatable="false">5187838</string>
+    <string name="email_example_profile" translatable="false">alumno@ulsaoaxaca.edu.mx</string>
+    <string name="mobile_example_profile" translatable="false">9510000000</string>
+    <string name="phone_example_profile" translatable="false">5187800</string>
     <string name="name_profile">Nombre</string>
     <string name="surname_profile">Apellidos</string>
     <string name="id_profile" translatable="false">ID</string>
