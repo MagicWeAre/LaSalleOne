@@ -20,6 +20,7 @@
             android:layout_marginStart="60dp"
             android:layout_marginEnd="60dp"
             android:fontFamily="sans-serif"
+            android:gravity="center"
             android:text="@string/error_no_data"
             android:textSize="25sp"
             android:textStyle="bold"

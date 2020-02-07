@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/homeRefresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/homeRefresh"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.HomeFragment">
 
     <LinearLayout
@@ -45,27 +45,27 @@
                     android:background="?android:attr/selectableItemBackground"
                     android:contentDescription="@string/ad_content_description"
                     android:scaleType="fitCenter"
-                    app:srcCompat="@drawable/ic_wbannerempty"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"/>
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_wbannerempty"/>
 
                 <TextView
                     android:id="@+id/homeBannerText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="34sp"
-                    android:textColor="@color/colorBlack"
                     android:text="@string/welcome_message_m"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="34sp"
                     android:textStyle="italic"
-                    app:layout_constraintTop_toTopOf="parent"
+                    android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.15"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.4"
-                    android:visibility="gone"
                     tools:visibility="visible"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -131,18 +131,18 @@
                         android:id="@+id/currentSubject"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
                         android:text="@string/name_example_grades"
                         android:textAlignment="textEnd"
                         android:textColor="@color/colorPrimaryText"
                         android:textSize="16sp"
                         app:autoSizeMaxTextSize="18sp"
                         app:autoSizeTextType="uniform"
-                        android:maxLines="2"
-                        android:ellipsize="end"
-                        android:layout_marginStart="16dp"
-                        app:layout_constraintStart_toEndOf="@id/currentSubjectTitle"
                         app:layout_constraintBottom_toTopOf="@id/currentSubjectPlus"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/currentSubjectTitle"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
@@ -220,27 +220,27 @@
                         app:autoSizeTextType="uniform"
                         app:layout_constraintBottom_toTopOf="@id/nextSubjectList"
                         app:layout_constraintEnd_toStartOf="@+id/nextSubject"
+                        app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintVertical_bias="0.5" />
 
                     <TextView
                         android:id="@+id/nextSubject"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
                         android:text="@string/name_example_grades"
                         android:textAlignment="textEnd"
                         android:textColor="@color/colorPrimaryText"
                         android:textSize="16sp"
                         app:autoSizeMaxTextSize="18sp"
                         app:autoSizeTextType="uniform"
-                        android:maxLines="2"
-                        android:ellipsize="end"
-                        android:layout_marginStart="16dp"
-                        app:layout_constraintStart_toEndOf="@id/nextSubjectTitle"
                         app:layout_constraintBottom_toTopOf="@id/nextSubjectPlus"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/nextSubjectTitle"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
@@ -251,11 +251,11 @@
                         android:textColor="@color/colorDarkGrey"
                         android:textSize="14sp"
                         android:visibility="gone"
-                        tools:visibility="visible"
                         app:autoSizeMaxTextSize="18sp"
                         app:autoSizeTextType="uniform"
                         app:layout_constraintEnd_toStartOf="@id/homeNSubDropdownIcon"
-                        app:layout_constraintTop_toBottomOf="@id/nextSubject" />
+                        app:layout_constraintTop_toBottomOf="@id/nextSubject"
+                        tools:visibility="visible" />
 
                     <ImageView
                         android:id="@+id/homeNSubDropdownIcon"
@@ -263,10 +263,10 @@
                         android:layout_height="wrap_content"
                         android:tint="@color/colorDarkGrey"
                         android:visibility="gone"
-                        tools:visibility="visible"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/nextSubject"
-                        app:srcCompat="@drawable/ic_icon_arrow_dropdown" />
+                        app:srcCompat="@drawable/ic_icon_arrow_dropdown"
+                        tools:visibility="visible" />
 
 
                     <androidx.recyclerview.widget.RecyclerView
@@ -275,9 +275,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
                         android:visibility="gone"
-                        tools:visibility="visible"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/nextSubjectPlus" />
+                        app:layout_constraintTop_toBottomOf="@id/nextSubjectPlus"
+                        tools:visibility="visible" />
 
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -288,13 +288,13 @@
             android:id="@+id/statisticsOne"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:visibility="gone"
             tools:visibility="visible">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsNumberCard"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -358,7 +358,7 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsAvgCard"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -426,77 +426,13 @@
             android:id="@+id/statisticsTwo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:visibility="gone"
             tools:visibility="visible">
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/subjectsHighestCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginBottom="10dp"
-                android:layout_weight="1"
-                android:elevation="4dp"
-                android:visibility="gone"
-                app:cardCornerRadius="4dp"
-                tools:visibility="visible">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/homeHighestCL"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingStart="20dp"
-                    android:paddingTop="12dp"
-                    android:paddingEnd="20dp"
-                    android:paddingBottom="16dp">
-
-                    <TextView
-                        android:id="@+id/subjectsHighestTitle"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:layout_marginEnd="16dp"
-                        android:ellipsize="end"
-                        android:maxLines="2"
-                        android:text="@string/subjects_highest"
-                        android:textColor="@color/colorText"
-                        android:textSize="14sp"
-                        app:autoSizeMaxTextSize="16sp"
-                        app:autoSizeTextType="uniform"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/subjectsHighest"
-                        app:layout_constraintHorizontal_bias="0"
-                        app:layout_constraintHorizontal_weight="0.6"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0" />
-
-                    <TextView
-                        android:id="@+id/subjectsHighest"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:maxLines="1"
-                        android:text="@string/subjects_highest_placeholder"
-                        android:textAlignment="textEnd"
-                        android:textColor="@color/colorPrimaryText"
-                        android:textSize="24sp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_weight="0.4"
-                        app:layout_constraintStart_toEndOf="@id/subjectsHighestTitle"
-                        app:layout_constraintTop_toTopOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsLowestCard"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -553,6 +489,70 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_weight="0.4"
                         app:layout_constraintStart_toEndOf="@id/subjectsLowestTitle"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/subjectsHighestCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="10dp"
+                android:layout_weight="1"
+                android:elevation="4dp"
+                android:visibility="gone"
+                app:cardCornerRadius="4dp"
+                tools:visibility="visible">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/homeHighestCL"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingStart="20dp"
+                    android:paddingTop="12dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="16dp">
+
+                    <TextView
+                        android:id="@+id/subjectsHighestTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_marginEnd="16dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="@string/subjects_highest"
+                        android:textColor="@color/colorText"
+                        android:textSize="14sp"
+                        app:autoSizeMaxTextSize="16sp"
+                        app:autoSizeTextType="uniform"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/subjectsHighest"
+                        app:layout_constraintHorizontal_bias="0"
+                        app:layout_constraintHorizontal_weight="0.6"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0" />
+
+                    <TextView
+                        android:id="@+id/subjectsHighest"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:maxLines="1"
+                        android:text="@string/subjects_highest_placeholder"
+                        android:textAlignment="textEnd"
+                        android:textColor="@color/colorPrimaryText"
+                        android:textSize="24sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_weight="0.4"
+                        app:layout_constraintStart_toEndOf="@id/subjectsHighestTitle"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

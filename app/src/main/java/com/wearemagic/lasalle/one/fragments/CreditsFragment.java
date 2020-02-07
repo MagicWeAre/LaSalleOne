@@ -2,6 +2,8 @@ package com.wearemagic.lasalle.one.fragments;
 
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,6 +46,7 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private SwipeRefreshLayout swipeRefreshLayout;
     ArrayList<String> periodValueList = new ArrayList<>();
     private ConstraintLayout constraintLayout;
+    private ConnectivityManager mConnectivityManager;
     private TextView emptyMessage;
 
     private String sessionCookie;
@@ -59,11 +62,14 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if(savedInstanceState != null){
             spinnerPosition = savedInstanceState.getInt("spinnerPosition");
             creditsList = savedInstanceState.getParcelableArrayList("creditsList");
             periodValueList = savedInstanceState.getStringArrayList("periodValueList");
         }
+
+        mConnectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
     @Override
@@ -187,6 +193,33 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         spinnerPosition = spinnerPos;
     }
 
+    private void setEmptyMessage() {
+        emptyMessage.setText(getString(R.string.error_no_data));
+        emptyMessage.setVisibility(View.VISIBLE);
+    }
+
+    private void sendEventCode(String code) {
+        switch (code) {
+            case "ERROR_NO_INTERNET_CONNECTION":
+                if(viewCreated) {
+                    Snackbar noInternetSB = Snackbar
+                        .make(constraintLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                        .setAction(getString(R.string.retry_internet_connection), (View view) -> {
+                                onRefresh();
+                        });
+
+                    noInternetSB.show();
+                }
+
+                break;
+            default:
+                emptyMessage.setText(getString(R.string.error_parsing_data));
+                emptyMessage.setVisibility(View.VISIBLE);
+                break;
+        }
+
+    }
+
     private class BalanceAsyncTaskRunner extends AsyncTask<String, String, List> {
 
         @Override
@@ -201,9 +234,11 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                 String serviceCookie = params[0];
                 String periodArgument = periodValueList.get(spinnerPosition);
 
-                try {returnList = StudentData.getChargesCredits(serviceCookie, periodArgument, true);}
-                catch (IOException e) {
+                try {
+                    returnList = StudentData.getChargesCredits(serviceCookie, periodArgument, true);
+                } catch (IOException e) {
                     Log.e(TAG, "IOException on creditsTask");
+                    e.printStackTrace();
                 } catch (IllegalArgumentException e) {
                     Log.e(TAG, "IllegalArgumentException on CreditsAsyncTask");
                     returnList = null;
@@ -246,22 +281,17 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                         onPostFinished = true;
                     }
                 } else {
-                    if(viewCreated) {
-                        Snackbar noInternetSB = Snackbar
-                                .make(constraintLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
-                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        onRefresh();
-                                    }
-                                });
+                    NetworkInfo activeNetwork = mConnectivityManager.getActiveNetworkInfo();
+                    boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
-                        noInternetSB.show();
+                    if (isConnected){
+                        sendEventCode("ERROR_HTTP_IO_EXCEPTION");
+                    } else {
+                        sendEventCode("ERROR_NO_INTERNET_CONNECTION");
                     }
                 }
             } else {
-                emptyMessage.setText(getString(R.string.error_parsing_data));
-                emptyMessage.setVisibility(View.VISIBLE);
+                sendEventCode("ERROR_HTTP_PARSE");
             }
             swipeRefreshLayout.setRefreshing(false);
         }
@@ -274,10 +304,5 @@ public class CreditsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         @Override
         protected void onProgressUpdate(String... text) {        }
 
-    }
-
-    private void setEmptyMessage() {
-        emptyMessage.setText(getString(R.string.error_no_data));
-        emptyMessage.setVisibility(View.VISIBLE);
     }
 }

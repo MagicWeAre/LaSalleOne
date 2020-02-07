@@ -3,7 +3,6 @@ package com.wearemagic.lasalle.one;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -18,9 +17,9 @@ import com.google.android.material.snackbar.Snackbar;
 import com.wearemagic.lasalle.one.adapters.ExpandableScheduleAdapter;
 import com.wearemagic.lasalle.one.exceptions.LoginTimeoutException;
 import com.wearemagic.lasalle.one.objects.SchedulePiece;
+import com.wearemagic.lasalle.one.providers.ObjectMethods;
 import com.wearemagic.lasalle.one.providers.StudentData;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import org.jsoup.nodes.Document;
 
@@ -165,29 +164,6 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
         }
     }
 
-    public String capitalizeSubjectTitle(String subjectTitle){
-        String returnString;
-        returnString = subjectTitle.replaceAll("\\bVi\\b","VI")
-                .replaceAll("\\bIv\\b","IV")
-                .replaceAll("\\bIii\\b","III")
-                .replaceAll("\\bIi\\b","II")
-
-                .replaceAll("\\bFm\\b","FM")
-                .replaceAll("\\bQb\\b","QB")
-                .replaceAll("\\bEa\\b","EA")
-                .replaceAll("\\bHcs\\b","HCS");
-
-        return returnString;
-    }
-
-    public String dateToISO(String imperialDate){
-        String[] dateList = imperialDate.split("/");
-        String[] isoDateList = {dateList[2].trim(), StringUtils.leftPad(dateList[0].trim(),2, "0"),
-                StringUtils.leftPad(dateList[1].trim(),2, "0")};
-        String isoDate = TextUtils.join("-", isoDateList);
-        return isoDate;
-    }
-
     public String orderName(String commaName) {
         String disorderedName = commaName.replace(",", "");
         String[] instructorArray = disorderedName.split("\\s+");
@@ -314,8 +290,9 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
                     ArrayList<String> localSubjectData = new ArrayList<>();
 
                     String[] subjectTitle = ((String) returnList.get(0)).split(" - ", 2);
+                    String capitalizedTitle = ObjectMethods.capitalizeSubjectTitle(WordUtils.capitalizeFully(subjectTitle[1])).trim();
 
-                    localSubjectData.add(capitalizeSubjectTitle(WordUtils.capitalizeFully(subjectTitle[1])).trim());
+                    localSubjectData.add(ObjectMethods.accentuateSubjectTitle(capitalizedTitle));
 
                     String localCredits = (String) returnList.get(1);
                     localSubjectData.add(localCredits.trim().replace("Credits", "").trim());
@@ -324,7 +301,10 @@ public class ScheduleSubjectDetailActivity extends AppCompatActivity implements 
 
                     String[] dateRangeList = ((String) returnList.get(3)).split("-");
 
-                    localSubjectData.add(dateToISO(dateRangeList[0]).concat(" / ").concat(dateToISO(dateRangeList[1])).trim());
+                    String dates = ObjectMethods.dateToISO(dateRangeList[0]).concat(" / ")
+                            .concat(ObjectMethods.dateToISO(dateRangeList[1])).trim();
+
+                    localSubjectData.add(dates);
 
                     String[] subjectCodes = subjectTitle[0].split("/", 3);
 

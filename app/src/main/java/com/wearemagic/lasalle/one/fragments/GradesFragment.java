@@ -2,6 +2,8 @@ package com.wearemagic.lasalle.one.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,6 +42,7 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private ArrayList<String> periodValueList = new ArrayList<>();
     private ArrayList<GradeSubject> gradeSubjectArrayList = new ArrayList<>();
 
+    private ConnectivityManager mConnectivityManager;
     private RecyclerView gradesRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private GradeSubjectAdapter gsAdapter;
@@ -68,6 +71,8 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
             periodValueList = savedInstanceState.getStringArrayList("periodValueList");
             gradeSubjectArrayList = savedInstanceState.getParcelableArrayList("gradeSubjectArrayList");
         }
+
+        mConnectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
     @Override
@@ -198,6 +203,41 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
         spinnerPosition = spinnerPos;
     }
 
+    private void sendEventCode(String code) {
+        switch (code) {
+            case "ERROR_NO_INTERNET_CONNECTION":
+                if(viewCreated && constraintLayout != null) {
+                    Snackbar noInternetSB = Snackbar
+                            .make(constraintLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                            .setAction(getString(R.string.retry_internet_connection), (View view) -> {
+                                onRefresh();
+                            });
+
+                    noInternetSB.show();
+                }
+
+                break;
+            default:
+                emptyMessage.setText(getString(R.string.error_parsing_data));
+                emptyMessage.setVisibility(View.VISIBLE);
+                break;
+        }
+
+    }
+
+    private void fillGrades(ArrayList<GradeSubject> gradeSubjectList) {
+        emptyMessage.setVisibility(View.GONE);
+
+        gsList.clear();
+        gsList.addAll(gradeSubjectList);
+        gsAdapter.notifyDataSetChanged();
+    }
+
+    private void setEmptyMessage() {
+        emptyMessage.setText(getString(R.string.error_no_data));
+        emptyMessage.setVisibility(View.VISIBLE);
+    }
+
     private class GradesAsyncTaskRunner extends AsyncTask<String, String, ArrayList<GradeSubject>> {
 
         @Override
@@ -253,8 +293,10 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
                     gradeSubjectArrayList = returnList;
                     ArrayList homeList = new ArrayList();
-                    homeList.add(String.valueOf(returnList.get(0).getCurrentGrade()));
-                    homeList.add(String.valueOf(returnList.get(returnList.size() - 1).getCurrentGrade()));
+                    Float maxGrade = Float.parseFloat(returnList.get(0).getCurrentGrade()) / 10;
+                    Float minGrade = Float.parseFloat(returnList.get(returnList.size() - 1).getCurrentGrade()) / 10;
+                    homeList.add(String.valueOf(maxGrade));
+                    homeList.add(String.valueOf(minGrade));
 
                     //Get AVG
                     ArrayList<Integer> avgList = new ArrayList();
@@ -262,50 +304,33 @@ public class GradesFragment extends Fragment implements SwipeRefreshLayout.OnRef
                         avgList.add(grade.getCurrentDoubleGrade());
                     }
 
-                    int averageGrade = 0;
+                    float averageGrade = 0;
 
                     for (int points: avgList){
                         averageGrade = averageGrade + points;
                     }
 
-                    int average = averageGrade / avgList.size();
+                    float average = averageGrade / avgList.size();
 
-                    homeList.add(String.valueOf(average));
+                    homeList.add(String.valueOf(average / 10));
 
                     listener.onGradesInfoSent(homeList);
                     fillGrades(gradeSubjectArrayList);
-                } else{
-                    if (constraintLayout != null){
-                        Snackbar noInternetSB = Snackbar
-                                .make(constraintLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
-                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        onRefresh(); }
-                                });
+                } else {
+                    NetworkInfo activeNetwork = mConnectivityManager.getActiveNetworkInfo();
+                    boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
-                        noInternetSB.show();
+                    if (isConnected){
+                        sendEventCode("ERROR_HTTP_IO_EXCEPTION");
+                    } else {
+                        sendEventCode("ERROR_NO_INTERNET_CONNECTION");
                     }
                 }
             } else {
-                emptyMessage.setText(getString(R.string.error_parsing_data));
-                emptyMessage.setVisibility(View.VISIBLE);
+                sendEventCode("ERROR_HTTP_PARSE");
             }
 
             swipeRefreshLayout.setRefreshing(false);
         }
-    }
-
-    private void fillGrades(ArrayList<GradeSubject> gradeSubjectList) {
-        emptyMessage.setVisibility(View.GONE);
-
-        gsList.clear();
-        gsList.addAll(gradeSubjectList);
-        gsAdapter.notifyDataSetChanged();
-    }
-
-    private void setEmptyMessage() {
-        emptyMessage.setText(getString(R.string.error_no_data));
-        emptyMessage.setVisibility(View.VISIBLE);
     }
 }

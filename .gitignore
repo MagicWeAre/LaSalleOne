@@ -9,3 +9,12 @@
 /build
 /captures
 .externalNativeBuild
+
+## FOR PRIVACY REASONS
+/app/src/androidTest
+/app/src/test
+/app/src/mock
+/app/src/one
+/app/release
+/app/one
+/app/build

@@ -1,6 +1,8 @@
 package com.wearemagic.lasalle.one.fragments;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,6 +41,7 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private ArrayList<SummaryType> summaryList = new ArrayList<>();
     private ArrayList<String> totalsList = new ArrayList<>();
 
+    private ConnectivityManager mConnectivityManager;
     private RecyclerView summaryRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private SummaryTypeAdapter stAdapter;
@@ -68,6 +71,8 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
             sessionCookie = savedInstanceState.getString("sessionCookie");
             spinnerPosition = savedInstanceState.getInt("spinnerPosition");
         }
+
+        mConnectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
     @Override
@@ -184,6 +189,33 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
         spinnerPosition = spinnerPos;
     }
 
+    private void setEmptyMessage() {
+        emptyMessage.setText(getString(R.string.error_no_data));
+        emptyMessage.setVisibility(View.VISIBLE);
+    }
+
+    private void sendEventCode(String code) {
+        switch (code) {
+            case "ERROR_NO_INTERNET_CONNECTION":
+                if(viewCreated) {
+                    Snackbar noInternetSB = Snackbar
+                            .make(linearLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                            .setAction(getString(R.string.retry_internet_connection), (View view) -> {
+                                onRefresh();
+                            });
+
+                    noInternetSB.show();
+                }
+
+                break;
+            default:
+                emptyMessage.setText(getString(R.string.error_parsing_data));
+                emptyMessage.setVisibility(View.VISIBLE);
+                break;
+        }
+
+    }
+
     private class BalanceAsyncTaskRunner extends AsyncTask<String, String, ArrayList<ArrayList>> {
 
         @Override
@@ -231,32 +263,22 @@ public class BalanceFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
                     fillSummary(summaryList, totalsList);
                 } else {
-                    if (viewCreated){
-                        Snackbar noInternetSB = Snackbar
-                                .make(linearLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
-                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        onRefresh(); }
-                                });
+                    NetworkInfo activeNetwork = mConnectivityManager.getActiveNetworkInfo();
+                    boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
-                        noInternetSB.show();
+                    if (isConnected){
+                        sendEventCode("ERROR_HTTP_IO_EXCEPTION");
+                    } else {
+                        sendEventCode("ERROR_NO_INTERNET_CONNECTION");
                     }
                 }
             } else {
-                emptyMessage.setText(getString(R.string.error_parsing_data));
-                emptyMessage.setVisibility(View.VISIBLE);
+                sendEventCode("ERROR_HTTP_PARSE");
             }
 
             swipeRefreshLayout.setRefreshing(false);
         }
     }
-
-    private void setEmptyMessage() {
-        emptyMessage.setText(getString(R.string.error_no_data));
-        emptyMessage.setVisibility(View.VISIBLE);
-    }
-
 
     private void fillSummary(ArrayList<SummaryType> summaryTypeList, ArrayList<String> summaryTotalsList){
         emptyMessage.setVisibility(View.GONE);

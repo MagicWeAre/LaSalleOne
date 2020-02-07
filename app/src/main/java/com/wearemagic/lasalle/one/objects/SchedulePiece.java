@@ -55,7 +55,7 @@ public class SchedulePiece implements Parcelable, Serializable {
                 break;
         }
 
-        SimpleDateFormat isoTime = new SimpleDateFormat("hh:mm", Locale.US);
+        SimpleDateFormat isoTime = new SimpleDateFormat("HH:mm", Locale.US);
 
         try {
             startDate = isoTime.parse(startHour);

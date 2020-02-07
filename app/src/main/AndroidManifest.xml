@@ -14,6 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:appComponentFactory"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:appComponentFactory="androidx">
 
         <meta-data
@@ -38,19 +39,22 @@
             android:theme="@style/MainTheme" />
         <activity
             android:name="SettingsActivity"
+            android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.SliderTheme" />
         <activity
             android:name="HelpActivity"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.SliderTheme" />
+            android:label="@string/title_activity_help"
+            android:theme="@style/AppTheme.SliderTheme"/>
         <activity
             android:name="DocumentsActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.SliderTheme" />
         <activity
             android:name="GradeSubjectDetailActivity"
-            android:parentActivityName=".MainActivity" />
+            android:label="@string/title_activity_grade_detail"
+            android:parentActivityName=".MainActivity"/>
         <activity
             android:name="ScheduleSubjectDetailActivity"
             android:parentActivityName=".MainActivity"

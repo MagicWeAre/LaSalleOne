@@ -2,20 +2,19 @@ package com.wearemagic.lasalle.one.objects;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.TextUtils;
-import android.util.Log;
 
-import org.apache.commons.lang3.StringUtils;
+import com.wearemagic.lasalle.one.providers.ObjectMethods;
+
 import org.apache.commons.text.WordUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.ArrayList;
 import java.util.Locale;
 
 public class ScheduleSubject implements Parcelable {
@@ -38,7 +37,8 @@ public class ScheduleSubject implements Parcelable {
 
         //subjectTitle
         String[] titleList = subjectTitle.split(" - ", 2);
-        this.subjectName = capitalizeSubjectTitle(WordUtils.capitalizeFully(titleList[1].trim()));
+        this.subjectName = ObjectMethods.capitalizeSubjectTitle(WordUtils.capitalizeFully(titleList[1].trim()));
+        this.subjectName = ObjectMethods.accentuateSubjectTitle(this.subjectName);
 
         String[] courseDataList = titleList[0].split("/");
         this.courseCode = courseDataList[0].trim();
@@ -57,8 +57,8 @@ public class ScheduleSubject implements Parcelable {
 
         //datesString
         String[] datesList = datesString.split("-", 2);
-        startDate = dateToISO(datesList[0]);
-        endDate = dateToISO(datesList[1]);
+        startDate = ObjectMethods.dateToISO(datesList[0]);
+        endDate = ObjectMethods.dateToISO(datesList[1]);
 
         //creditString
         String[] creditList = creditString.split(" ", 2);
@@ -135,14 +135,6 @@ public class ScheduleSubject implements Parcelable {
         return scheduleList;
     }
 
-    public String dateToISO(String imperialDate){
-        String[] dateList = imperialDate.split("/");
-        String[] isoDateList = {dateList[2].trim(), StringUtils.leftPad(dateList[0].trim(),2, "0"),
-                StringUtils.leftPad(dateList[1].trim(),2, "0")};
-        String isoDate = TextUtils.join("-", isoDateList);
-        return isoDate;
-    }
-
     public Date getStartDate() throws ParseException {
         SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         return isoFormat.parse(startDate);
@@ -160,7 +152,7 @@ public class ScheduleSubject implements Parcelable {
             ArrayList<Integer> temporalList = new ArrayList<>();
 
             if (dayInt == 0) {
-                Integer[] weekDays = new Integer[] {1,2,3,4,5,6,7};
+                Integer[] weekDays = new Integer[] {2, 3, 4, 5, 6};
                 Collections.addAll(temporalList, weekDays);
             } else {
                 temporalList.add(dayInt);
@@ -179,9 +171,10 @@ public class ScheduleSubject implements Parcelable {
         ArrayList<SchedulePiece> returnList = new ArrayList<>();
         for (SchedulePiece schedulePiece : scheduleList) {
             Integer dayInt = schedulePiece.getDayInt();
-            int[] weekDays = new int[] {1, 2, 3, 4, 5};
+            Integer[] weekDays = new Integer[] {2, 3, 4, 5, 6};
             boolean dayOfWeek = Arrays.asList(weekDays).contains(day);
-            if (dayInt == day || (dayInt == 0 && dayOfWeek)) {
+
+            if (dayInt.equals(day) || (dayInt == 0 && dayOfWeek)) {
                 returnList.add(schedulePiece);
             }
         }
@@ -229,21 +222,6 @@ public class ScheduleSubject implements Parcelable {
                 secondName + instructorArray[0] + " " + instructorArray[1]);
 
         return instructorName;
-    }
-
-    public String capitalizeSubjectTitle(String subjectTitle){
-        String returnString;
-        returnString = subjectTitle.replaceAll("\\bVi\\b","VI")
-                .replaceAll("\\bIv\\b","IV")
-                .replaceAll("\\bIii\\b","III")
-                .replaceAll("\\bIi\\b","II")
-
-                .replaceAll("\\bFm\\b","FM")
-                .replaceAll("\\bQb\\b","QB")
-                .replaceAll("\\bEa\\b","EA")
-                .replaceAll("\\bHcs\\b","HCS");
-
-        return returnString;
     }
 
     private static Date combineDates(Date date, Date time) {
