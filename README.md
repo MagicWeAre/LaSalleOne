@@ -8,15 +8,15 @@ Este programa es distribuido en la esperanza de que sea útil, pero SIN NINGUNA 
 
 Debería recibir una copia de la GNU General Public License junto con este programa. Si no es así, vea [http://www.gnu.org/licenses](http://www.gnu.org/licenses/).
 
-###Instalación
+### Instalación
 ---
 Para compilar la aplicación debes descargar e importar este proyecto en Android Studio o similar.
 De otra manera existe un archivo precompilado en app/open/release/
 
-###Bugs?
+### Bugs?
 ---
 support@wearemagic.dev
 
-###Sobre Marca Registrada
+### Sobre Marca Registrada
 ---
 WeAreMagic, el desarrollador de esta aplicación no está afiliado de ninguna forma con La Salle ni tiene planes para estarlo. Tampoco se pretende hacer pasar por la misma. Esta aplicación fue desarrollada por un estudiante para los estudiantes, y se pretende mantener así. La aplicación como es presentada es gratis y abierta, de manera tal que no se están haciendo regalías de la misma, y gracias al hecho de que es mayormente de código abierto, (casi) cualquier usuario puede inspeccionarla, modificarla y usarla a conveniencia. Si esto no lo mantiene feliz, no es nuestro problema.
