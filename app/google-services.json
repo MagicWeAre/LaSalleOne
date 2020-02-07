@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "909832088012",
+    "firebase_url": "https://lasalleone-d41c2.firebaseio.com",
+    "project_id": "lasalleone-d41c2",
+    "storage_bucket": "lasalleone-d41c2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:909832088012:android:b493eb2df48faff35d1569",
+        "android_client_info": {
+          "package_name": "com.wearemagic.lasalle.one"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "909832088012-tng6rc54kji1bqjslnn83gm80k7h89rj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUrXbmUVdSCQCQYg9_hYiKOWg7WbxyBvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "909832088012-tng6rc54kji1bqjslnn83gm80k7h89rj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
