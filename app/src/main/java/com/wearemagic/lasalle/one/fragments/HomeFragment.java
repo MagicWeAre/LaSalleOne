@@ -2,13 +2,6 @@ package com.wearemagic.lasalle.one.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.fragment.app.Fragment;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +12,14 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.wearemagic.lasalle.one.R;
 import com.wearemagic.lasalle.one.ScheduleSubjectDetailActivity;
 import com.wearemagic.lasalle.one.objects.ScheduleSubject;
@@ -157,37 +158,23 @@ public class HomeFragment extends Fragment {
             onCurrentSubjectsSent(currentSubjectAL);
         }
 
-        numberCL.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        numberCL.setOnClickListener((View v) -> {
                 bottomNavigation.setSelectedItemId(R.id.mainMenuSubjects);
-            }
         });
 
-        avgCL.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        avgCL.setOnClickListener((View v) -> {
                 bottomNavigation.setSelectedItemId(R.id.mainMenuGrades);
-            }
         });
 
-        highestCL.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        highestCL.setOnClickListener((View v) -> {
                 bottomNavigation.setSelectedItemId(R.id.mainMenuGrades);
-            }
         });
 
-        lowestCL.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        lowestCL.setOnClickListener((View v) -> {
                 bottomNavigation.setSelectedItemId(R.id.mainMenuGrades);
-            }
         });
 
-        currentSubjectCL.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        currentSubjectCL.setOnClickListener((View v) -> {
                 // Maybe redirect to DetailActivity? Sure, bitch!
                 // Sorry for the profanity, it's just me falling into madness
 
@@ -196,18 +183,14 @@ public class HomeFragment extends Fragment {
                 i.putExtra("numericCode", cNumericCode);
                 i.putExtra("periodCode", cPeriodCode);
                 startActivity(i);
-            }
         });
 
-        nextSubjectCL.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        nextSubjectCL.setOnClickListener((View v) -> {
                 Intent i = new Intent(getActivity(), ScheduleSubjectDetailActivity.class);
                 i.putExtra("sessionCookie", sessionCookie);
                 i.putExtra("numericCode", nNumericCode);
                 i.putExtra("periodCode", nPeriodCode);
                 startActivity(i);
-            }
         });
 
 
@@ -285,7 +268,12 @@ public class HomeFragment extends Fragment {
     }
 
     public void onGradesAvgSent(String localAvg) {
-        avg = localAvg;
+        int decimalPlaces = 3;
+        if (localAvg.startsWith("10.")) {
+            decimalPlaces = 4;
+        }
+
+        avg = localAvg.substring(0, decimalPlaces);
         avgText.setText(avg);
         homeLoading.setVisibility(View.GONE);
         llOne.setVisibility(View.VISIBLE);
@@ -293,7 +281,12 @@ public class HomeFragment extends Fragment {
     }
 
     public void onGradesHighestSent(String localHighest) {
-        highest = localHighest.substring(0,2);
+        int decimalPlaces = 3;
+        if (localHighest.startsWith("10.")) {
+            decimalPlaces = 4;
+        }
+
+        highest = localHighest.substring(0, decimalPlaces);
         highestText.setText(highest);
         homeLoading.setVisibility(View.GONE);
         llTwo.setVisibility(View.VISIBLE);
@@ -301,7 +294,12 @@ public class HomeFragment extends Fragment {
     }
 
     public void onGradesLowestSent(String localLowest) {
-        lowest = localLowest.substring(0,2);
+        int decimalPlaces = 3;
+        if (localLowest.startsWith("10.")) {
+            decimalPlaces = 4;
+        }
+
+        lowest = localLowest.substring(0, decimalPlaces);
         lowestText.setText(lowest);
         homeLoading.setVisibility(View.GONE);
         llTwo.setVisibility(View.VISIBLE);

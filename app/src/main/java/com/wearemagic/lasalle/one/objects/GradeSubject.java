@@ -3,6 +3,8 @@ package com.wearemagic.lasalle.one.objects;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.wearemagic.lasalle.one.providers.ObjectMethods;
+
 import org.apache.commons.text.WordUtils;
 
 public class GradeSubject implements Parcelable {
@@ -22,7 +24,8 @@ public class GradeSubject implements Parcelable {
 
 
     public GradeSubject(String nC, String p, String sN, String cI, String sC, String c) {
-        this.subjectName = capitalizeSubjectTitle(WordUtils.capitalizeFully(sN));
+        this.subjectName = ObjectMethods.capitalizeSubjectTitle(WordUtils.capitalizeFully(sN));
+        this.subjectName = ObjectMethods.accentuateSubjectTitle(this.subjectName);
 
         if(cI.contains("Teorico")) {
             this.teorico = true;
@@ -151,22 +154,6 @@ public class GradeSubject implements Parcelable {
 
     public boolean isInterna() {
         return interna;
-    }
-
-
-    public String capitalizeSubjectTitle(String subjectTitle){
-        String returnString;
-        returnString = subjectTitle.replaceAll("\\bVi\\b","VI")
-                    .replaceAll("\\bIv\\b","IV")
-                    .replaceAll("\\bIii\\b","III")
-                    .replaceAll("\\bIi\\b","II")
-
-                    .replaceAll("\\bFm\\b","FM")
-                    .replaceAll("\\bQb\\b","QB")
-                    .replaceAll("\\bEa\\b","EA")
-                    .replaceAll("\\bHcs\\b","HCS");
-
-        return returnString;
     }
 
     @Override

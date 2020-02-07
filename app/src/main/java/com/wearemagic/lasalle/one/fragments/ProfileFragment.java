@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -48,6 +50,8 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private String salleId;
     private ConstraintLayout profileLayout;
 
+    private ConnectivityManager mConnectivityManager;
+
     private ProfileAsyncTaskRunner profileTask = new ProfileAsyncTaskRunner();
     private PictureAsyncTaskRunner pictureTask = new PictureAsyncTaskRunner();
 
@@ -62,18 +66,6 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
 
     public ProfileFragment() { }
-
-    public interface ProfileListener {
-        void onSexSent(boolean male);
-        void onRedoLogin();
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false);
-    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -93,6 +85,8 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
                 salleId = getArguments().getString("salleId");
             }
         }
+
+        mConnectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 
         swipeRefreshLayout = view.findViewById(R.id.profileRefresh);
         swipeRefreshLayout.setOnRefreshListener(this);
@@ -131,72 +125,81 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
             pictureTask.execute(moodleCookie, salleId);
         }
 
-        email_layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        email_layout.setOnClickListener((View v) -> {
                 ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText(getString(R.string.label_clipboard), emailText.getText().toString());
                 clipboard.setPrimaryClip(clip);
                 Toast.makeText(getActivity().getApplicationContext(), getString(R.string.toast_email_clipboard_profile), Toast.LENGTH_SHORT).show();
-            }
         });
 
-        email_layout.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
+        email_layout.setOnLongClickListener((View v) -> {
 
                 Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
                 emailIntent.setData(Uri.fromParts("mailto", emailText.getText().toString(), null));
                 startActivity(Intent.createChooser(emailIntent, getString(R.string.label_email)));
                 return true;
-            }
         });
 
-        cellphone_layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        cellphone_layout.setOnClickListener((View v) -> {
                 ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText(getString(R.string.label_clipboard), cellphoneText.getText().toString());
                 clipboard.setPrimaryClip(clip);
                 Toast.makeText(getActivity().getApplicationContext(), getString(R.string.toast_phone_clipboard_profile), Toast.LENGTH_SHORT).show();
 
-            }
         });
 
-        cellphone_layout.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
+        cellphone_layout.setOnLongClickListener((View v) -> {
 
                 Intent cellphoneIntent = new Intent(Intent.ACTION_DIAL);
                 cellphoneIntent.setData(Uri.fromParts("tel", cellphoneText.getText().toString(), null));
                 startActivity(cellphoneIntent);
                 return true;
-            }
         });
 
-        phone_layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        phone_layout.setOnClickListener((View v) -> {
                 ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText(getString(R.string.label_clipboard), phoneText.getText().toString());
                 clipboard.setPrimaryClip(clip);
                 Toast.makeText(getActivity().getApplicationContext(), getString(R.string.toast_phone_clipboard_profile), Toast.LENGTH_SHORT).show();
-            }
         });
 
-        phone_layout.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
+        phone_layout.setOnLongClickListener((View v) -> {
 
                 Intent phoneIntent = new Intent(Intent.ACTION_DIAL);
                 phoneIntent.setData(Uri.fromParts("tel", phoneText.getText().toString(), null));
                 startActivity(phoneIntent);
                 return true;
-            }
         });
 
         viewCreated = true;
         super.onViewCreated(view, savedInstanceState);
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_profile, container, false);
+    }
+
+    private void sendEventCode(String code) {
+        switch (code) {
+            case "ERROR_NO_INTERNET_CONNECTION":
+                if(viewCreated) {
+                    Snackbar noInternetSB = Snackbar
+                            .make(profileLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                            .setAction(getString(R.string.retry_internet_connection), (View view) -> {
+                                onRefresh();
+                            });
+
+                    noInternetSB.show();
+                }
+
+                break;
+            default:
+                break;
+        }
 
     }
 
@@ -322,69 +325,6 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
     }
 
-    private class ProfileAsyncTaskRunner extends AsyncTask<String, String, ArrayList<String>> {
-
-        @Override
-        protected ArrayList<String> doInBackground(String... params) {
-
-            String sessionCookie = params[0];
-            ArrayList<String> profileArrayLocal = new ArrayList<>();
-
-            try { profileArrayLocal = StudentData.getProfile(sessionCookie);
-            } catch (IOException e) {
-                Log.e(TAG, "IOException on ProfileAsyncTask");
-            } catch (LoginTimeoutException lt) {
-                Log.d(TAG, "LoginTimeoutException on ProfileAsyncTask");
-
-                if (getActivity() != null){
-                    listener.onRedoLogin();
-                }
-            } catch (NullPointerException np){
-                Log.e(TAG, np.getMessage());
-                profileArrayLocal = null;
-            }
-
-
-            return profileArrayLocal;
-
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<String> profileArrayLocal) {
-            if (profileArrayLocal != null){
-                if (!profileArrayLocal.isEmpty()){
-                    profileArray = profileArrayLocal;
-                    fillProfile(profileArray);
-                } else {
-                    if(viewCreated){
-                        Snackbar noInternetSB = Snackbar
-                                .make(profileLayout, getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
-                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        onRefresh(); }
-                                });
-
-                        noInternetSB.show();
-                    }
-
-                }
-            } // else {}
-            swipeRefreshLayout.setRefreshing(false);
-
-        }
-
-        @Override
-        protected void onPreExecute() {
-            profileLayout.setVisibility(View.GONE);
-            swipeRefreshLayout.setRefreshing(true);
-        }
-
-        @Override
-        protected void onProgressUpdate(String... text) {        }
-
-    }
-
     private void fillProfile(ArrayList<String> profileArray){
         View separatorA = getView().findViewById(R.id.profileSeparatorA);
         View separatorB = getView().findViewById(R.id.profileSeparatorB);
@@ -421,26 +361,40 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
         String phoneStr = profileArray.get(7);
 
         boolean profileEmpty = true;
+
         if (!emailStr.isEmpty()){
             emailText.setText(emailStr.toLowerCase());
             email_layout.setVisibility(View.VISIBLE);
             profileEmpty = false;
-        }
-        if (!emailStr.isEmpty() && !cellphoneStr.isEmpty()){
-            separatorA.setVisibility(View.VISIBLE);
         }
         if (!cellphoneStr.isEmpty()){
             cellphoneText.setText(cellphoneStr);
             cellphone_layout.setVisibility(View.VISIBLE);
             profileEmpty = false;
         }
-        if (!cellphoneStr.isEmpty() && !phoneStr.isEmpty()){
-            separatorB.setVisibility(View.VISIBLE);
-        }
         if (!phoneStr.isEmpty()){
             phoneText.setText(phoneStr);
             phone_layout.setVisibility(View.VISIBLE);
             profileEmpty = false;
+        }
+
+        boolean separatorAVisible = false;
+        boolean separatorBVisible = false;
+
+        if (!emailStr.isEmpty() && !cellphoneStr.isEmpty()){
+            separatorA.setVisibility(View.VISIBLE);
+            separatorAVisible = true;
+        }
+        if (!cellphoneStr.isEmpty() && !phoneStr.isEmpty()){
+            separatorB.setVisibility(View.VISIBLE);
+            separatorBVisible = true;
+        }
+
+        if (!separatorAVisible && !separatorBVisible){
+            if (!emailStr.isEmpty() && !phoneStr.isEmpty()){
+                separatorA.setVisibility(View.VISIBLE);
+                separatorAVisible = true;
+            }
         }
 
         if (!profileEmpty){
@@ -454,6 +408,7 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
         }
 
         listener.onSexSent(male);
+        listener.onUserDataSent(nameStr, surnameStr, emailStr);
 
         /*
         boolean addressEmpty = true;
@@ -488,5 +443,70 @@ public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRe
         }
         */
         profileLayout.setVisibility(View.VISIBLE);
+    }
+
+    public interface ProfileListener {
+        void onSexSent(boolean male);
+        void onUserDataSent(String name, String surname, String email);
+        void onRedoLogin();
+    }
+
+    private class ProfileAsyncTaskRunner extends AsyncTask<String, String, ArrayList<String>> {
+
+        @Override
+        protected ArrayList<String> doInBackground(String... params) {
+
+            String sessionCookie = params[0];
+            ArrayList<String> profileArrayLocal = new ArrayList<>();
+
+            try { profileArrayLocal = StudentData.getProfile(sessionCookie);
+            } catch (IOException e) {
+                Log.e(TAG, "IOException on ProfileAsyncTask");
+            } catch (LoginTimeoutException lt) {
+                Log.d(TAG, "LoginTimeoutException on ProfileAsyncTask");
+
+                if (getActivity() != null){
+                    listener.onRedoLogin();
+                }
+            } catch (NullPointerException np){
+                Log.e(TAG, np.getMessage());
+                profileArrayLocal = null;
+            }
+
+
+            return profileArrayLocal;
+
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> profileArrayLocal) {
+            if (profileArrayLocal != null){
+                if (!profileArrayLocal.isEmpty()){
+                    profileArray = profileArrayLocal;
+                    fillProfile(profileArray);
+                } else {
+                    NetworkInfo activeNetwork = mConnectivityManager.getActiveNetworkInfo();
+                    boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+                    if (isConnected){
+                        sendEventCode("ERROR_HTTP_IO_EXCEPTION");
+                    } else {
+                        sendEventCode("ERROR_NO_INTERNET_CONNECTION");
+                    }
+                }
+            } // else {}
+            swipeRefreshLayout.setRefreshing(false);
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            profileLayout.setVisibility(View.GONE);
+            swipeRefreshLayout.setRefreshing(true);
+        }
+
+        @Override
+        protected void onProgressUpdate(String... text) {        }
+
     }
 }

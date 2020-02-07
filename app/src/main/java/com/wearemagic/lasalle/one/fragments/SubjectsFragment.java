@@ -2,6 +2,8 @@ package com.wearemagic.lasalle.one.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,6 +48,7 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
     private ArrayList<String> periodValueList = new ArrayList<>();
     private ArrayList<ScheduleSubject> scheduleSubjectArrayList = new ArrayList<>();
 
+    private ConnectivityManager mConnectivityManager;
     private RecyclerView subjectsRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private ScheduleSubjectAdapter ssAdapter;
@@ -69,13 +72,16 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState != null){
+
+        if(savedInstanceState != null) {
             periodValueList = savedInstanceState.getStringArrayList("periodValueList");
             sessionCookie = savedInstanceState.getString("sessionCookie");
             spinnerPosition = savedInstanceState.getInt("spinnerPosition");
             scheduleSubjectArrayList = savedInstanceState.getParcelableArrayList("scheduleSubjectArrayList");
             firstGet = savedInstanceState.getBoolean("firstGet");
         }
+
+        mConnectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         setHasOptionsMenu(true);
     }
 
@@ -351,6 +357,28 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
         return cal.getTime();
     }
 
+    private void sendEventCode(String code) {
+        switch (code) {
+            case "ERROR_NO_INTERNET_CONNECTION":
+                if(viewCreated) {
+                    Snackbar noInternetSB = Snackbar
+                            .make(getActivity().findViewById(R.id.mainFrameLayout), getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
+                            .setAction(getString(R.string.retry_internet_connection), (View view) -> {
+                                onRefresh();
+                            });
+
+                    noInternetSB.show();
+                }
+
+                break;
+            default:
+                emptyMessage.setText(getString(R.string.error_parsing_data));
+                emptyMessage.setVisibility(View.VISIBLE);
+                break;
+        }
+
+    }
+
     private class SubjectsAsyncTaskRunner extends AsyncTask<String, String, ArrayList<ScheduleSubject>> {
 
         @Override
@@ -411,22 +439,17 @@ public class SubjectsFragment extends Fragment implements SwipeRefreshLayout.OnR
                     scheduleSubjectArrayList = returnList;
                     fillSubjects(returnList);
                 } else {
-                    if (viewCreated) {
-                        Snackbar noInternetSB = Snackbar
-                                .make(getActivity().findViewById(R.id.mainFrameLayout), getString(R.string.error_internet_failure), Snackbar.LENGTH_INDEFINITE)
-                                .setAction(getString(R.string.retry_internet_connection), new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        onRefresh();
-                                    }
-                                });
+                    NetworkInfo activeNetwork = mConnectivityManager.getActiveNetworkInfo();
+                    boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
-                        noInternetSB.show();
+                    if (isConnected){
+                        sendEventCode("ERROR_HTTP_IO_EXCEPTION");
+                    } else {
+                        sendEventCode("ERROR_NO_INTERNET_CONNECTION");
                     }
                 }
             } else {
-                emptyMessage.setText(getString(R.string.error_parsing_data));
-                emptyMessage.setVisibility(View.VISIBLE);
+                sendEventCode("ERROR_HTTP_PARSE");
             }
 
             swipeRefreshLayout.setRefreshing(false);

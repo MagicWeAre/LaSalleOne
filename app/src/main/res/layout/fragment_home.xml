@@ -288,13 +288,13 @@
             android:id="@+id/statisticsOne"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:visibility="gone"
             tools:visibility="visible">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsNumberCard"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -358,7 +358,7 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsAvgCard"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -426,77 +426,13 @@
             android:id="@+id/statisticsTwo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:visibility="gone"
             tools:visibility="visible">
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/subjectsLowestCard"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginBottom="10dp"
-                android:layout_weight="1"
-                android:elevation="4dp"
-                android:visibility="gone"
-                app:cardCornerRadius="4dp"
-                tools:visibility="visible">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/homeLowestCL"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingStart="20dp"
-                    android:paddingTop="12dp"
-                    android:paddingEnd="20dp"
-                    android:paddingBottom="16dp">
-
-                    <TextView
-                        android:id="@+id/subjectsLowestTitle"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:layout_marginEnd="16dp"
-                        android:ellipsize="end"
-                        android:maxLines="2"
-                        android:text="@string/subjects_lowest"
-                        android:textColor="@color/colorText"
-                        android:textSize="14sp"
-                        app:autoSizeMaxTextSize="16sp"
-                        app:autoSizeTextType="uniform"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/subjectsLowest"
-                        app:layout_constraintHorizontal_bias="0"
-                        app:layout_constraintHorizontal_weight="0.6"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_bias="0" />
-
-                    <TextView
-                        android:id="@+id/subjectsLowest"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:maxLines="1"
-                        android:text="@string/subjects_lowest_placeholder"
-                        android:textAlignment="textEnd"
-                        android:textColor="@color/colorPrimaryText"
-                        android:textSize="24sp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_weight="0.4"
-                        app:layout_constraintStart_toEndOf="@id/subjectsLowestTitle"
-                        app:layout_constraintTop_toTopOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
                 android:id="@+id/subjectsHighestCard"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -553,6 +489,70 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_weight="0.4"
                         app:layout_constraintStart_toEndOf="@id/subjectsHighestTitle"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/subjectsLowestCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="10dp"
+                android:layout_weight="1"
+                android:elevation="4dp"
+                android:visibility="gone"
+                app:cardCornerRadius="4dp"
+                tools:visibility="visible">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/homeLowestCL"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingStart="20dp"
+                    android:paddingTop="12dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="16dp">
+
+                    <TextView
+                        android:id="@+id/subjectsLowestTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_marginEnd="16dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="@string/subjects_lowest"
+                        android:textColor="@color/colorText"
+                        android:textSize="14sp"
+                        app:autoSizeMaxTextSize="16sp"
+                        app:autoSizeTextType="uniform"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/subjectsLowest"
+                        app:layout_constraintHorizontal_bias="0"
+                        app:layout_constraintHorizontal_weight="0.6"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0" />
+
+                    <TextView
+                        android:id="@+id/subjectsLowest"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:maxLines="1"
+                        android:text="@string/subjects_lowest_placeholder"
+                        android:textAlignment="textEnd"
+                        android:textColor="@color/colorPrimaryText"
+                        android:textSize="24sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_weight="0.4"
+                        app:layout_constraintStart_toEndOf="@id/subjectsLowestTitle"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

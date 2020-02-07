@@ -1,16 +1,21 @@
 package com.wearemagic.lasalle.one;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -41,6 +46,7 @@ import com.wearemagic.lasalle.one.fragments.ProfileFragment;
 import com.wearemagic.lasalle.one.fragments.SubjectsFragment;
 import com.wearemagic.lasalle.one.objects.ScheduleSubject;
 import com.wearemagic.lasalle.one.providers.Periods;
+import com.wearemagic.lasalle.one.providers.WeAreMagic;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,7 +60,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final String TAG = "LaSalleOne";
     public String packageName = "com.wearemagic.lasalle.one";
 
+    String projectCode = "la_salle-one";
+    int versionCode = BuildConfig.VERSION_CODE;
+    String versionName = BuildConfig.VERSION_NAME;
+    String variant = "PUBLIC_RELEASE_ONE";
+
     private PeriodsAsyncTaskRunner periodsTask = new PeriodsAsyncTaskRunner();
+    boolean firstTime = false;
+    private LogOpenAsyncTaskRunner logsTask = new LogOpenAsyncTaskRunner();
+
     private ArrayList<String> subjectsPeriodNames = new ArrayList<>();
     private ArrayList<String> subjectsPeriodValues = new ArrayList<>();
     private ArrayList<String> gradesPeriodNames = new ArrayList<>();
@@ -90,8 +104,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String balanceTag;
     private String creditsTag;
     private String chargesTag;
+    private LogNewAsyncTaskRunner logsNewTask = new LogNewAsyncTaskRunner();
+    private String logEmail;
+    private String logName;
+
     private int nightMode;
     private boolean redoingLogin;
+    private String logSurname;
+    private boolean retrievedPeriods = false;
+    private boolean loggedOnServer = false;
+    private boolean loggedNewServer = false;
+    private boolean advDataCollection = false;
+    private boolean accountStored = false;
+    private boolean advDataReceived = false;
 
     // 0: none
     // 1: subjectsFragment
@@ -125,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             sessionCookie = loginBundle.getString("sessionCookie");
             moodleCookie = loginBundle.getString("moodleCookie");
             salleId = loginBundle.getString("salleId");
+            accountStored = loginBundle.getBoolean("accountStored");
 
             // Check Saved State (in case activity is being resumed)
             if (savedInstanceState != null) {
@@ -134,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     moodleCookie = savedInstanceState.getString("moodleCookie");
                 } if (salleId.isEmpty()) {
                     salleId = savedInstanceState.getString("salleId");
+                    accountStored = savedInstanceState.getBoolean("accountStored");
                 }
 
                 // Recover saved variables
@@ -161,11 +188,39 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 // Redoing Login Boolean
                 redoingLogin = savedInstanceState.getBoolean("redoingLogin");
 
+                retrievedPeriods = savedInstanceState.getBoolean("retrievedPeriods");
+                loggedOnServer = savedInstanceState.getBoolean("loggedOnServer");
+                loggedNewServer = savedInstanceState.getBoolean("loggedNewServer");
+                firstTime = savedInstanceState.getBoolean("firstTime");
+                advDataCollection = savedInstanceState.getBoolean("advDataCollection");
+
+                logEmail = savedInstanceState.getString("logEmail");
+                logName = savedInstanceState.getString("logName");
+                logSurname = savedInstanceState.getString("logSurname");
+                advDataReceived = savedInstanceState.getBoolean("advDataReceived");
+
             } else {
-                // If there was no saved data, start task to fetch it
+                firstTime = sharedP.getBoolean("firstTime", true);
+                String lastLogin = sharedP.getString("lastLogin", "");
+
+                if (lastLogin.equals(salleId)) {
+                    firstTime = false;
+                }
+
+                sharedP.edit().putString("lastLogin", salleId).apply();
+
+            }
+
+            if (!retrievedPeriods) {
                 periodsTask = new PeriodsAsyncTaskRunner();
                 periodsTask.execute(sessionCookie);
             }
+
+            if (!firstTime && !loggedOnServer) {
+                logsTask = new LogOpenAsyncTaskRunner();
+                logsTask.execute();
+            }
+
 
             setContentView(R.layout.activity_main);
 
@@ -309,8 +364,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 switch (menuItem.getItemId()){
                     case R.id.mainDrawerEnd: {
                         SharedPreferences.Editor editor = sharedP.edit();
+                        // Login Data
                         editor.remove("accountUser");
                         editor.remove("accountPass");
+
+                        // Data Collection
+                        editor.remove("firstTime");
+                        //editor.putString("lastLogin", salleId).apply();
+
                         editor.apply();
 
                         startActivity(new Intent( getApplicationContext(), LoginActivity.class));
@@ -369,6 +430,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     protected void onResume(){
+
+        checkFirstTime();
+
         navigationView = findViewById(R.id.mainDrawerNavigation);
         navigationView.setCheckedItem(R.id.mainDrawerHome);
 
@@ -391,6 +455,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         outState.putString("sessionCookie", sessionCookie);
         outState.putString("moodleCookie", moodleCookie);
         outState.putString("salleId", salleId);
+        outState.putBoolean("accountStored", accountStored);
 
         // Active Fragments
         outState.putInt("activeFragment", activeFragment);
@@ -414,6 +479,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         outState.putString("chargesTag", vpAdapter.getFragmentTag(2));
 
         outState.putBoolean("redoingLogin", redoingLogin);
+        outState.putBoolean("retrievedPeriods", retrievedPeriods);
+        outState.putBoolean("loggedOnServer", loggedOnServer);
+        outState.putBoolean("loggedNewServer", loggedNewServer);
+        outState.putBoolean("firstTime", firstTime);
+        outState.putBoolean("advDataCollection", advDataCollection);
+
+        outState.putString("logEmail", logEmail);
+        outState.putString("logName", logName);
+        outState.putString("logSurname", logSurname);
+        outState.getBoolean("advDataReceived", advDataReceived);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -528,10 +604,68 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         startActivity(i);
     }
 
+    public void checkFirstTime() {
+        if (firstTime) {
+            AlertDialog.Builder newcomerBuilder = new AlertDialog.Builder(this);
+            LayoutInflater inflater = (LayoutInflater) this.getSystemService (Context.LAYOUT_INFLATER_SERVICE);
+            View privacyDialog = inflater.inflate(R.layout.privacy_dialog, null);
+
+            newcomerBuilder.setView(privacyDialog).setMessage(getString(R.string.eula_message))
+                    .setTitle(getString(R.string.eula_title))
+                    .setPositiveButton(getString(R.string.eula_accept), (DialogInterface dialog, int which) -> {
+
+                            CheckBox advDataCheckbox = privacyDialog.findViewById(R.id.advDataCollection);
+                            advDataCollection = advDataCheckbox.isChecked();
+
+                            SharedPreferences sharedP = getSharedPreferences(packageName, MODE_PRIVATE);
+
+                            if (accountStored) {
+                                sharedP.edit().putBoolean("firstTime", false).apply();
+                            }
+
+                            firstTime = false;
+
+                            if (!loggedOnServer) {
+                                logsTask = new LogOpenAsyncTaskRunner();
+                                logsTask.execute();
+                            }
+
+                            if (advDataCollection && advDataReceived && !loggedNewServer) {
+                                // Launch new async task to send new user data
+                                logsNewTask = new LogNewAsyncTaskRunner();
+                                logsNewTask.execute();
+                            }
+                        })
+                    .setNegativeButton(getString(R.string.eula_read), (DialogInterface dialog, int which) -> {
+                    String url = getString(R.string.eula_link);
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(url));
+                    startActivity(i);
+                });
+
+            AlertDialog newcomerDialog = newcomerBuilder.create();
+            newcomerBuilder.show();
+        }
+    }
+
     // Fragment Listener Info Sent
     @Override
     public void onSexSent(boolean sex){
         homeFragment.setSex(sex);
+    }
+
+    @Override
+    public void onUserDataSent(String name, String surname, String email) {
+        advDataReceived = true;
+        logEmail = email;
+        logName = name;
+        logSurname = surname;
+
+        if (!loggedNewServer && advDataCollection) {
+            // Launch new async task to send new user data
+            logsNewTask = new LogNewAsyncTaskRunner();
+            logsNewTask.execute();
+        }
     }
 
     @Override
@@ -655,6 +789,56 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 updatePeriods(periodsList);
                 sendPeriods();
             }
+
+            retrievedPeriods = true;
+        }
+    }
+
+    // Fairly simple AsyncTask, sends information to own server every time App is opened
+    private class LogOpenAsyncTaskRunner extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            String requestCode = "ERROR_NO_OPERATION";
+
+            try {
+                requestCode = WeAreMagic.sendOpenEvent(projectCode, String.valueOf(versionCode), variant, salleId);
+            } catch (IOException e) {
+                // Connectivity issues
+                Log.e(TAG, "IOException on LogsAsyncTask");
+                e.printStackTrace();
+            }
+
+            return requestCode;
+        }
+
+        @Override
+        protected void onPostExecute(String operationCode) {
+            loggedOnServer = true;
+        }
+    }
+
+    // Fairly simple AsyncTask, sends information to own server every time App is opened
+    private class LogNewAsyncTaskRunner extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            String requestCode = "ERROR_NO_OPERATION";
+
+            try {
+                requestCode = WeAreMagic.sendNewLoginEvent(projectCode, String.valueOf(versionCode),
+                        variant, salleId, logEmail, logName, logSurname);
+            } catch (IOException e) {
+                // Connectivity issues
+                Log.e(TAG, "IOException on LogNewAsyncTask");
+            }
+
+            return requestCode;
+        }
+
+        @Override
+        protected void onPostExecute(String operationCode) {
+            loggedNewServer = true;
         }
     }
 

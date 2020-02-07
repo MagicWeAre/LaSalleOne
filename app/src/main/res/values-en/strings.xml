@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_sign_in">Sign In</string>
-    <string name="ad_content_description">Card Assistant coming soon.</string>
+    <string name="ad_content_description">Welcome to La Salle Oaxaca.</string>
     <string name="auto_dark_spinner">Day/Night</string>
     <string name="balance_menu">Finances</string>
     <string name="balance_view_charges">Deposit</string>
@@ -54,11 +54,11 @@
     <string name="schedule_activity_title">Schedule</string>
     <string name="settings_menu">Settings</string>
     <string name="spinner_period_title">Period Shown</string>
-    <string name="subjects_avg">Average:</string>
-    <string name="subjects_highest">Highest Grade:</string>
-    <string name="subjects_lowest">Lowest Grade:</string>
+    <string name="subjects_avg">Average</string>
+    <string name="subjects_highest">Highest Grade</string>
+    <string name="subjects_lowest">Lowest Grade</string>
     <string name="subjects_menu">Subjects</string>
-    <string name="subjects_number">Subjects:</string>
+    <string name="subjects_number">Subjects</string>
     <string name="summary_tab">Summary</string>
     <string name="surname_profile">Surnames</string>
     <string name="theme_settings">Dark Theme:</string>
@@ -80,4 +80,15 @@
     <string name="welcome_message_m">Welcome</string>
     <string name="welcome_message_w">Welcome</string>
     <string name="app_name">La Salle Oaxaca</string>
+    <string name="practical_icon_schedule">Practical Class</string>
+    <string name="tutor_icon_schedule">Lecturer</string>
+    <string name="title_activity_grade_detail">Grades</string>
+    <string name="title_activity_help">Support</string>
+    <string name="eula_accept">I AGREE</string>
+    <string name="eula_read">READ THE POLICY</string>
+    <string name="eula_title">Accept Privacy Policy</string>
+    <string name="eula_link">https://wearemagic.dev/projects/la-salle-one/privacy.php?lang=en</string>
+    <string name="eula_message">By installing and using this application you accept the privacy policy. La Salle is a trademark to which WeAreMagic is not affiliated.</string>
+    <string name="adv_data_collection_disclaimer">"Share email to know about future apps and more "</string>
+    <string name="privacy_disclaimer">By installing and using this application you accept the privacy policy. La Salle is a trademark to which WeAreMagic is not affiliated.</string>
 </resources>
